@@ -76,6 +76,10 @@ export async function GET(request: Request) {
         });
 
         if (existingPayment) {
+          // Parse course items for detailed logging and validation
+          const itemsString = typeof existingPayment.items === 'string' ? existingPayment.items : '[]';
+          const courseItems = JSON.parse(itemsString);
+          
           if (existingPayment.status === 'PENDING') {
             // Update payment to completed with additional metadata
             const updatedPayment = await prisma.payment.update({
@@ -87,27 +91,51 @@ export async function GET(request: Request) {
               },
             });
 
-            // Clear user's cart
+            // Clear user's cart to prevent duplicate purchases
             const deletedItems = await prisma.cartItem.deleteMany({
               where: { userId: existingPayment.userId },
             });
 
-            console.log('✅ Payment updated to COMPLETED:', {
+            console.log('✅ Payment & Course Information Updated:', {
               paymentId: updatedPayment.id,
               amount: updatedPayment.amount,
+              currency: updatedPayment.currency,
+              courseCount: courseItems.length,
+              courseNames: courseItems.map((item: any) => item.certificationName),
               cartItemsCleared: deletedItems.count,
-              userId: existingPayment.userId
+              userId: existingPayment.userId,
+              completedAt: updatedPayment.updatedAt
             });
+
+            // Verify course items are properly stored
+            console.log('📚 Course Details Verification:', {
+              totalCourses: courseItems.length,
+              courses: courseItems.map((item: any, index: number) => ({
+                index: index + 1,
+                name: item.certificationName,
+                price: item.price,
+                id: item.certificationId
+              }))
+            });
+
           } else {
-            console.log('ℹ️ Payment already completed:', {
+            console.log('ℹ️ Payment already completed - Course info preserved:', {
               paymentId: existingPayment.id,
               status: existingPayment.status,
+              courseCount: courseItems.length,
+              courses: courseItems.map((item: any) => item.certificationName),
               userId: existingPayment.userId
             });
           }
 
-          // Redirect to dashboard with success message and trigger data refresh
-          return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true&payment_id=${existingPayment.id}&refresh=1`);
+          // Safety check: Verify payment data integrity before redirect
+          if (!existingPayment.items || courseItems.length === 0) {
+            console.warn('⚠️ Warning: No course items found in payment record');
+            return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true&warning=no_items&payment_id=${existingPayment.id}`);
+          }
+
+          // Redirect to dashboard with complete course and payment information
+          return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true&payment_id=${existingPayment.id}&refresh=1&courses=${courseItems.length}`);
         } else {
           console.log('❌ Payment record not found in database');
           return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=payment_not_found`);

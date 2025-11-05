@@ -101,21 +101,36 @@ function PaymentsContent() {
     const error = searchParams.get('error');
     const paymentId = searchParams.get('payment_id');
     const refresh = searchParams.get('refresh');
+    const courses = searchParams.get('courses');
+    const warning = searchParams.get('warning');
     
     if (success === 'true') {
       // Payment was successful
       clearCart();
       
-      // Show enhanced success message with payment details
-      const successMessage = paymentId 
-        ? '🎉 Payment successful! Your certifications are now available in your history.'
-        : '🎉 Payment successful! Your certifications are now available.';
+      // Show enhanced success message with course and payment details
+      let successMessage = '🎉 Payment successful! Your certifications are now available.';
       
-      toast.success(successMessage);
+      if (paymentId && courses) {
+        const courseCount = parseInt(courses) || 0;
+        successMessage = `🎉 Payment successful! ${courseCount} certification${courseCount !== 1 ? 's' : ''} added to your dashboard.`;
+      } else if (paymentId) {
+        successMessage = '🎉 Payment successful! Your certifications are now available in your history.';
+      }
+      
+      // Handle warnings
+      if (warning === 'no_items') {
+        toast.warning('⚠️ Payment completed but course details may be incomplete. Please contact support if needed.');
+      } else {
+        toast.success(successMessage, {
+          duration: 5000,
+        });
+      }
       
       // Force immediate refresh if requested
       if (refresh === '1') {
         console.log('🔄 Force refreshing payment data after successful payment...');
+        console.log('📚 Expected courses:', courses || 'unknown');
         fetchPayments(true);
       }
       
@@ -323,19 +338,56 @@ function PaymentsContent() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-semibold text-gray-400 mb-2">Items:</h4>
-                        {items.map((item: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between text-sm">
-                            <span className="text-gray-300">{item.certificationName}</span>
-                            <span className="text-gray-400">RM {item.price.toFixed(2)}</span>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-gray-400">Course Details ({items.length} item{items.length !== 1 ? 's' : ''})</h4>
+                          {payment.status === 'COMPLETED' && (
+                            <span className="text-xs bg-green-500/10 text-green-400 px-2 py-1 rounded">
+                              Available in Dashboard
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {items.map((item: any, index: number) => (
+                            <div key={index} className="bg-white/5 p-3 rounded-lg border border-white/10">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <h5 className="text-gray-200 font-medium text-sm">{item.certificationName}</h5>
+                                  {item.certificationId && (
+                                    <p className="text-xs text-gray-500 mt-1">ID: {item.certificationId}</p>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-gray-300 font-semibold">RM {item.price.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="pt-2 border-t border-white/10">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-400">Total Amount:</span>
+                            <span className="text-white font-bold">RM {payment.amount.toFixed(2)}</span>
                           </div>
-                        ))}
-                        {payment.stripePaymentId && (
-                          <p className="text-xs text-gray-500 mt-4">
-                            Payment ID: {payment.stripePaymentId}
+                          
+                          {payment.stripePaymentId && (
+                            <p className="text-xs text-gray-500 mt-2">
+                              Payment ID: {payment.stripePaymentId}
+                            </p>
+                          )}
+                          
+                          <p className="text-xs text-gray-500 mt-1">
+                            Transaction Date: {new Date(payment.createdAt).toLocaleDateString('en-MY', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
-                        )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
