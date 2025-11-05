@@ -57,18 +57,31 @@ export default function StudentDashboard() {
   const [selectedLanguage, setSelectedLanguage] = useState("english")
 
   useEffect(() => {
-    // Check if user is logged in - check both localStorage AND auth store
+    // Improved authentication check with better fallback logic
     const loggedIn = localStorage.getItem("isLoggedIn")
-    const userEmail = localStorage.getItem("userEmail")
+    const userEmail = localStorage.getItem("userEmail") 
     const userName = localStorage.getItem("userName")
+    const storedToken = localStorage.getItem("token")
     const userLanguage = localStorage.getItem("userLanguage") || "english"
-    const savedPurchaseHistory = localStorage.getItem("dtvet-purchase-history")
 
-    // Check localStorage OR auth store (token + user)
+    // More flexible authentication check - any valid token or localStorage auth
     const isAuthenticatedByLocalStorage = loggedIn === "true" && userEmail && userName
     const isAuthenticatedByStore = token && user
+    const hasStoredToken = !!storedToken
+    
+    console.log('🔍 Dashboard Auth Check:', {
+      isAuthenticatedByLocalStorage,
+      isAuthenticatedByStore,
+      hasStoredToken,
+      loggedIn,
+      hasUserEmail: !!userEmail,
+      hasUserName: !!userName,
+      hasToken: !!token,
+      hasUser: !!user
+    });
 
-    if (isAuthenticatedByLocalStorage || isAuthenticatedByStore) {
+    // More permissive check - authenticate if we have any valid sign of authentication
+    if (isAuthenticatedByLocalStorage || isAuthenticatedByStore || hasStoredToken) {
       setIsAuthenticated(true)
       
       // Use data from localStorage if available, otherwise from auth store
@@ -83,22 +96,31 @@ export default function StudentDashboard() {
       setNewName(displayName)
       setSelectedLanguage(userLanguage)
       
-      // Fetch real payment history from API
-      fetchPaymentHistory()
-    } else {router.push("/login")
+      // Fetch real payment history from API if we have a token
+      if (token || storedToken) {
+        fetchPaymentHistory()
+      }
+    } else {
+      // Only redirect to login if we're sure there's no authentication
+      console.log('❌ No authentication found, redirecting to login...');
+      router.push("/login")
     }
     setLoading(false)
   }, [router, token, user])
 
   // Fetch payment history from API
   const fetchPaymentHistory = async () => {
-    if (!token) return;
+    const authToken = token || localStorage.getItem("token");
+    if (!authToken) {
+      console.log('No token available for payment history');
+      return;
+    }
     
     setPurchaseLoading(true);
     try {
       const response = await fetch('/api/payments', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
       });

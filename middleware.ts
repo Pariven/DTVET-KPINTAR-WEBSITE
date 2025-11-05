@@ -23,9 +23,24 @@ export function middleware(request: NextRequest) {
   // Check for token in cookies (server-side httpOnly cookie)
   const authToken = request.cookies.get('auth-token')?.value;
   const token = request.cookies.get('token')?.value;
-  const authHeader = request.headers.get('Authorization')?.split(' ')[1];const finalToken = authToken || token || authHeader;
+  const authHeader = request.headers.get('Authorization')?.split(' ')[1];
+  const finalToken = authToken || token || authHeader;
 
-  if (!finalToken) {// Redirect to login instead of returning JSON error for page requests
+  // Debug logging for protected routes
+  if (path === '/checkout' || path === '/dashboard' || path.startsWith('/dashboard/')) {
+    console.log(`🔍 ${path} Middleware Debug:`, {
+      path,
+      hasAuthToken: !!authToken,
+      hasToken: !!token,
+      hasAuthHeader: !!authHeader,
+      hasFinalToken: !!finalToken,
+      authTokenValue: authToken ? `${authToken.substring(0, 20)}...` : 'none',
+      tokenValue: token ? `${token.substring(0, 20)}...` : 'none',
+    });
+  }
+
+  if (!finalToken) {
+    // Redirect to login instead of returning JSON error for page requests
     if (!path.startsWith('/api/')) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -59,7 +74,8 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
-    '/checkout',
+    '/dashboard', // Protect the main dashboard page
+    // '/checkout', // Allow checkout page - authentication handled client-side
     '/api/cart/:path*',
     '/api/certifications/:path*',
     '/api/stripe/checkout/:path*',
