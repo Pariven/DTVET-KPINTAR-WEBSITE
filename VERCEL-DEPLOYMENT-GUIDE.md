@@ -34,8 +34,8 @@ In your Vercel project dashboard, add these environment variables:
 
 ```bash
 # Stripe Configuration (LIVE KEYS)
-STRIPE_PUBLISHABLE_KEY=pk_live_51SOD5RK6AFoYdBabXChMuz1O408LC4yaDFPhB0254Cd1MwJ9vKpTKbY8EZbpjCUNSv24TLFlkh0MAFgCwJtz5fF800l95hKIS5
-STRIPE_SECRET_KEY=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
+STRIPE_PUBLISHABLE_KEY=pk_live_51... (your live publishable key from Stripe dashboard)
+STRIPE_SECRET_KEY=sk_live_51... (your live secret key from Stripe dashboard)
 
 # Website Configuration
 NEXT_PUBLIC_BASE_URL=https://www.digitaltvetmalaysia.com
