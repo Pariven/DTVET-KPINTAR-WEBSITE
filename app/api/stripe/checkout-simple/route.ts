@@ -6,11 +6,12 @@ import type Stripe from 'stripe';
 
 export async function POST(request: Request) {
   try {
-    // Get auth token
+    // Get auth token from multiple sources
     const authHeader = request.headers.get('authorization');
     const cookieStore = cookies();
     const cookieToken = cookieStore.get('auth-token')?.value;
-    const token = authHeader?.replace('Bearer ', '') || cookieToken;
+    const regularCookieToken = cookieStore.get('token')?.value;
+    const token = authHeader?.replace('Bearer ', '') || cookieToken || regularCookieToken;
 
     if (!token) {
       return NextResponse.json(

@@ -47,11 +47,11 @@ export const STRIPE_CONFIG = {
   publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
   currency: 'myr',
   get successUrl() {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+    const baseUrl = getAppUrl();
     return `${baseUrl}/dashboard/payments?success=true&session_id={CHECKOUT_SESSION_ID}`;
   },
   get cancelUrl() {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
-    return `${baseUrl}/dashboard?canceled=true`;
+    const baseUrl = getAppUrl();
+    return `${baseUrl}/checkout?canceled=true`;
   },
 } as const;

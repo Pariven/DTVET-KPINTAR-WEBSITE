@@ -7,13 +7,20 @@ export async function POST(request: Request) {
   try {
     console.log('🚀 Checkout API called');
     
-    // Get auth token
+    // Get auth token from multiple sources
     const authHeader = request.headers.get('authorization');
     const cookieStore = cookies();
     const cookieToken = cookieStore.get('auth-token')?.value;
-    const token = authHeader?.replace('Bearer ', '') || cookieToken;
+    const regularCookieToken = cookieStore.get('token')?.value;
+    const token = authHeader?.replace('Bearer ', '') || cookieToken || regularCookieToken;
 
-    console.log('🔑 Token exists:', !!token);
+    console.log('🔑 Token Debug:', {
+      hasAuthHeader: !!authHeader,
+      hasCookieToken: !!cookieToken,
+      hasRegularCookieToken: !!regularCookieToken,
+      finalToken: !!token,
+      tokenLength: token ? token.length : 0
+    });
 
     if (!token) {
       console.log('❌ No auth token found');

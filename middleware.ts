@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import { verifyToken } from './lib/auth-utils';
+import { verifyToken } from './lib/auth';
 
 // Add the routes that don't require authentication
 const publicRoutes = [
@@ -8,10 +8,11 @@ const publicRoutes = [
   '/login',
   '/api/auth/login',
   '/api/auth/register',
+  '/api/stripe/webhook',
   '/certifications',
 ];
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Check if the path is public
@@ -34,7 +35,7 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  const decoded = await verifyToken(finalToken);
+  const decoded = verifyToken(finalToken);
   if (!decoded) {// Redirect to login for invalid tokens on page requests
     if (!path.startsWith('/api/')) {
       return NextResponse.redirect(new URL('/login', request.url));
@@ -58,7 +59,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
+    '/checkout',
     '/api/cart/:path*',
     '/api/certifications/:path*',
+    '/api/stripe/checkout/:path*',
+    '/api/stripe/checkout-simple/:path*',
+    '/api/payments/:path*',
+    '/api/test-payment/:path*',
   ],
 };

@@ -28,11 +28,24 @@ export default function SimpleStripeButton({ items, total, onPaymentStart }: Sim
     setIsLoading(true);
 
     try {
-      // Get fresh token from localStorage in case it was updated
-      const freshToken = localStorage.getItem('token') || token;
+      // Get fresh token from multiple sources
+      const freshToken = localStorage.getItem('token') || 
+                        localStorage.getItem('auth-token') || 
+                        token || 
+                        // Try to get from cookies as a fallback
+                        document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+      
+      console.log('Payment Token Check:', {
+        hasLocalStorageToken: !!localStorage.getItem('token'),
+        hasAuthToken: !!localStorage.getItem('auth-token'),
+        hasStoreToken: !!token,
+        hasCookieToken: !!document.cookie.split('; ').find(row => row.startsWith('token=')),
+        finalToken: !!freshToken
+      });
       
       if (!freshToken) {
-        toast.error('Please log in to proceed with payment');
+        toast.error('Authentication required. Please log in to proceed with payment.');
+        window.location.href = '/login?redirect=/checkout&reason=no_token';
         setIsLoading(false);
         return;
       }
@@ -48,17 +61,35 @@ export default function SimpleStripeButton({ items, total, onPaymentStart }: Sim
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { error: 'Failed to parse server response' };
+        }
         
         if (response.status === 401) {
           toast.error('Your session has expired. Please log in again.');
-          // Clear invalid token
+          // Clear all tokens
           localStorage.removeItem('token');
-          window.location.href = '/login?redirect=/checkout';
+          localStorage.removeItem('auth-token');
+          
+          // Clear the auth store
+          if (typeof window !== 'undefined') {
+            // Force reload to clear state
+            window.location.href = '/login?redirect=/checkout&reason=session_expired';
+          }
           return;
         }
         
-        throw new Error(errorData.error || 'Failed to create payment session');
+        console.error('Payment API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData.error,
+          url: response.url
+        });
+        
+        throw new Error(errorData.error || `Payment failed (${response.status}): ${response.statusText}`);
       }
 
       const data = await response.json();
