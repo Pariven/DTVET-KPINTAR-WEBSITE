@@ -26,15 +26,18 @@ export const stripe = new Proxy({} as Stripe, {
 
 // Get the app URL with production-ready defaults
 const getAppUrl = () => {
-  // Always prefer environment variable
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
+  // Try multiple environment variable options
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                 process.env.NEXT_PUBLIC_BASE_URL || 
+                 process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+  
+  if (appUrl) {
+    return appUrl;
   }
   
-  // Production fallback - should be set via Vercel environment variables
+  // Production fallback
   if (process.env.NODE_ENV === 'production') {
-    // This should never be used in production - always set NEXT_PUBLIC_APP_URL
-    throw new Error('NEXT_PUBLIC_APP_URL must be set in production environment');
+    return 'https://www.digitaltvetmalaysia.com';
   }
   
   // Development fallback
