@@ -13,6 +13,14 @@ export async function POST(request: Request) {
     const regularCookieToken = cookieStore.get('token')?.value;
     const token = authHeader?.replace('Bearer ', '') || cookieToken || regularCookieToken;
 
+    console.log('🔍 Checkout-Simple API Debug:', {
+      hasAuthHeader: !!authHeader,
+      hasCookieToken: !!cookieToken,
+      hasRegularCookieToken: !!regularCookieToken,
+      hasFinalToken: !!token,
+      authHeaderValue: authHeader ? `${authHeader.substring(0, 30)}...` : 'none',
+    });
+
     if (!token) {
       return NextResponse.json(
         { error: 'Unauthorized - No token provided' },

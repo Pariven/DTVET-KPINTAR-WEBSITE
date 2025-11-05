@@ -27,7 +27,7 @@ export function middleware(request: NextRequest) {
   const finalToken = authToken || token || authHeader;
 
   // Debug logging for protected routes
-  if (path === '/checkout' || path === '/dashboard' || path.startsWith('/dashboard/')) {
+  if (path === '/checkout' || path === '/dashboard' || path.startsWith('/dashboard/') || path.includes('/api/stripe/')) {
     console.log(`🔍 ${path} Middleware Debug:`, {
       path,
       hasAuthToken: !!authToken,
@@ -36,6 +36,7 @@ export function middleware(request: NextRequest) {
       hasFinalToken: !!finalToken,
       authTokenValue: authToken ? `${authToken.substring(0, 20)}...` : 'none',
       tokenValue: token ? `${token.substring(0, 20)}...` : 'none',
+      authHeaderValue: authHeader ? `${authHeader.substring(0, 20)}...` : 'none',
     });
   }
 
