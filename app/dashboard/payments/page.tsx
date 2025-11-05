@@ -96,33 +96,52 @@ function PaymentsContent() {
   useEffect(() => {
     if (!mounted) return;
     
-    // Check for success parameter and session_id
+    // Check for success or error parameters
     const success = searchParams.get('success');
-    const sessionId = searchParams.get('session_id');
+    const error = searchParams.get('error');
     
-    if (success === 'true' && sessionId) {
-      // Verify the payment with Stripe
-      verifyPaymentCompletion(sessionId);
-      
-      // Remove the success parameter from URL without triggering a page reload
-      const url = new URL(window.location.href);
-      url.searchParams.delete('success');
-      url.searchParams.delete('session_id');
-      window.history.replaceState({}, '', url.toString());
-    } else if (success === 'true') {
-      // Fallback for success without session_id
+    if (success === 'true') {
+      // Payment was successful
       clearCart();
-      toast.success('Payment successful! Your certifications are now available.');
+      toast.success('🎉 Payment successful! Your certifications are now available.');
       
-      // Remove the success parameter from URL
+      // Remove URL parameters
       const url = new URL(window.location.href);
       url.searchParams.delete('success');
       window.history.replaceState({}, '', url.toString());
       
-      // Force refresh payment history
+      // Refresh payment history
       setTimeout(() => {
         fetchPayments();
       }, 1000);
+    } else if (error) {
+      // Handle different error types
+      let errorMessage = 'Payment processing failed. Please try again.';
+      
+      switch (error) {
+        case 'no_session':
+          errorMessage = 'Payment session not found. Please try again.';
+          break;
+        case 'payment_not_found':
+          errorMessage = 'Payment record not found. Please contact support if your payment was processed.';
+          break;
+        case 'payment_incomplete':
+          errorMessage = 'Payment was not completed. Please try again.';
+          break;
+        case 'stripe_error':
+          errorMessage = 'Payment service error. Please try again.';
+          break;
+        case 'server_error':
+          errorMessage = 'Server error occurred. Please contact support if needed.';
+          break;
+      }
+      
+      toast.error(errorMessage);
+      
+      // Remove error parameter from URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('error');
+      window.history.replaceState({}, '', url.toString());
     }
   }, [searchParams, mounted, clearCart]);
 
@@ -139,6 +158,8 @@ function PaymentsContent() {
 
   const fetchPayments = async () => {
     try {
+      console.log('📊 Fetching payment history...');
+      
       const response = await fetch('/api/payments', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -147,16 +168,24 @@ function PaymentsContent() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch payments');
+        const errorData = await response.text();
+        console.error('❌ Payment fetch failed:', { status: response.status, error: errorData });
+        throw new Error(`Failed to fetch payments: ${response.status}`);
       }
 
       const data = await response.json();
-      setPayments(data.payments || []);
+      const paymentList = data.payments || [];
       
-      toast.success('Payment history loaded successfully');
+      console.log('✅ Payments loaded:', { count: paymentList.length });
+      setPayments(paymentList);
+      
+      if (paymentList.length > 0) {
+        console.log('💰 Recent payments:', paymentList.slice(0, 2));
+      }
+      
     } catch (error) {
-      console.error('Error fetching payments:', error);
-      toast.error('Failed to load payment history');
+      console.error('💥 Error fetching payments:', error);
+      toast.error('Failed to load payment history. Please refresh the page.');
       
       // Fallback to empty array
       setPayments([]);

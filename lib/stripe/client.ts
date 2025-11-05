@@ -48,7 +48,7 @@ export const STRIPE_CONFIG = {
   currency: 'myr',
   get successUrl() {
     const baseUrl = getAppUrl();
-    return `${baseUrl}/dashboard/payments?success=true&session_id={CHECKOUT_SESSION_ID}`;
+    return `${baseUrl}/api/payments/success?session_id={CHECKOUT_SESSION_ID}`;
   },
   get cancelUrl() {
     const baseUrl = getAppUrl();

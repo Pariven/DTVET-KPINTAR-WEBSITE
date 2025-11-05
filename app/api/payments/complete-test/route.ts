@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth-utils';
+import { verifyToken } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
@@ -14,15 +14,15 @@ export async function POST(request: Request) {
     }
 
     const token = authHeader.substring(7);
-    const payload = await verifyToken(token);
-    if (!payload) {
+    const payload = verifyToken(token);
+    if (!payload || typeof payload === 'string') {
       return NextResponse.json(
         { error: 'Unauthorized - Invalid token' },
         { status: 401 }
       );
     }
 
-    const userId = payload.userId as string;
+    const userId = (payload as any).userId as string;
 
     // Find any pending payments for this user
     const pendingPayments = await prisma.payment.findMany({

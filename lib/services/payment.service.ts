@@ -83,16 +83,26 @@ export class PaymentService {
    * Handle successful payment webhook
    */
   static async handlePaymentSuccess(session: Stripe.Checkout.Session): Promise<void> {
+    console.log('🎯 Handling payment success for session:', session.id);
+    
     const payment = await prisma.payment.findUnique({
       where: { stripeSessionId: session.id },
     });
 
     if (!payment) {
+      console.error('❌ Payment not found for session:', session.id);
       throw new Error(`Payment not found for session: ${session.id}`);
     }
 
+    console.log('💰 Found payment record:', {
+      id: payment.id,
+      userId: payment.userId,
+      amount: payment.amount,
+      status: payment.status
+    });
+
     // Update payment status
-    await prisma.payment.update({
+    const updatedPayment = await prisma.payment.update({
       where: { id: payment.id },
       data: {
         status: 'COMPLETED',
@@ -100,10 +110,14 @@ export class PaymentService {
       },
     });
 
+    console.log('✅ Payment updated to COMPLETED:', updatedPayment.id);
+
     // Clear user's cart items
-    await prisma.cartItem.deleteMany({
+    const deletedItems = await prisma.cartItem.deleteMany({
       where: { userId: payment.userId },
     });
+
+    console.log('🛒 Cart cleared:', { deletedCount: deletedItems.count });
   }
 
   /**
