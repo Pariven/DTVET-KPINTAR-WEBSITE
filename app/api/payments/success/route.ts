@@ -77,27 +77,37 @@ export async function GET(request: Request) {
 
         if (existingPayment) {
           if (existingPayment.status === 'PENDING') {
-            // Update payment to completed
-            await prisma.payment.update({
+            // Update payment to completed with additional metadata
+            const updatedPayment = await prisma.payment.update({
               where: { id: existingPayment.id },
               data: {
                 status: 'COMPLETED',
                 stripePaymentId: session.payment_intent as string,
+                updatedAt: new Date(),
               },
             });
 
             // Clear user's cart
-            await prisma.cartItem.deleteMany({
+            const deletedItems = await prisma.cartItem.deleteMany({
               where: { userId: existingPayment.userId },
             });
 
-            console.log('✅ Payment updated to COMPLETED');
+            console.log('✅ Payment updated to COMPLETED:', {
+              paymentId: updatedPayment.id,
+              amount: updatedPayment.amount,
+              cartItemsCleared: deletedItems.count,
+              userId: existingPayment.userId
+            });
           } else {
-            console.log('ℹ️ Payment already completed');
+            console.log('ℹ️ Payment already completed:', {
+              paymentId: existingPayment.id,
+              status: existingPayment.status,
+              userId: existingPayment.userId
+            });
           }
 
-          // Redirect to dashboard with success message
-          return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true`);
+          // Redirect to dashboard with success message and trigger data refresh
+          return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true&payment_id=${existingPayment.id}&refresh=1`);
         } else {
           console.log('❌ Payment record not found in database');
           return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=payment_not_found`);

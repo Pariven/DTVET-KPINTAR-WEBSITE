@@ -99,21 +99,40 @@ function PaymentsContent() {
     // Check for success or error parameters
     const success = searchParams.get('success');
     const error = searchParams.get('error');
+    const paymentId = searchParams.get('payment_id');
+    const refresh = searchParams.get('refresh');
     
     if (success === 'true') {
       // Payment was successful
       clearCart();
-      toast.success('🎉 Payment successful! Your certifications are now available.');
       
-      // Remove URL parameters
-      const url = new URL(window.location.href);
-      url.searchParams.delete('success');
-      window.history.replaceState({}, '', url.toString());
+      // Show enhanced success message with payment details
+      const successMessage = paymentId 
+        ? '🎉 Payment successful! Your certifications are now available in your history.'
+        : '🎉 Payment successful! Your certifications are now available.';
       
-      // Refresh payment history
+      toast.success(successMessage);
+      
+      // Force immediate refresh if requested
+      if (refresh === '1') {
+        console.log('🔄 Force refreshing payment data after successful payment...');
+        fetchPayments(true);
+      }
+      
+      // Remove URL parameters after a short delay
       setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('success');
+        url.searchParams.delete('payment_id');
+        url.searchParams.delete('refresh');
+        window.history.replaceState({}, '', url.toString());
+      }, 2000);
+      
+      // Additional refresh after parameter cleanup
+      setTimeout(() => {
+        console.log('🔄 Secondary payment data refresh...');
         fetchPayments();
-      }, 1000);
+      }, 3000);
     } else if (error) {
       // Handle different error types
       let errorMessage = 'Payment processing failed. Please try again.';
@@ -156,8 +175,9 @@ function PaymentsContent() {
     fetchPayments();
   }, [token, router, mounted]);
 
-  const fetchPayments = async () => {
+  const fetchPayments = async (showLoader = false) => {
     try {
+      if (showLoader) setIsLoading(true);
       console.log('📊 Fetching payment history...');
       
       const response = await fetch('/api/payments', {
