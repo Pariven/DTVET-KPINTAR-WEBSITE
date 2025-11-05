@@ -4,10 +4,25 @@ import prisma from '@/lib/prisma';
 import { generateToken, setAuthCookie } from '@/lib/auth';
 
 export async function POST(request: Request) {
+  console.log('🔐 Login API called:', {
+    method: request.method,
+    url: request.url,
+    timestamp: new Date().toISOString()
+  });
+  
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const { email, password } = body;
+    
+    console.log('📧 Login request data:', {
+      email: email ? `${email.substring(0, 3)}***` : 'missing',
+      passwordProvided: !!password,
+      passwordLength: password?.length || 0
+    });
 
     // Find user by email
+    console.log('🔍 Looking for user with email:', email ? `${email.substring(0, 3)}***` : 'undefined');
+    
     const user = await prisma.user.findUnique({
       where: {
         email: email,
@@ -15,27 +30,45 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
+      console.log('❌ User not found for email:', email ? `${email.substring(0, 3)}***` : 'undefined');
       return NextResponse.json(
         { message: 'Invalid credentials' },
         { status: 401 }
       );
     }
+    
+    console.log('✅ User found:', {
+      id: user.id,
+      email: `${user.email.substring(0, 3)}***`,
+      name: user.name,
+      role: user.role
+    });
 
     // Verify password
+    console.log('🔑 Verifying password...');
     const isPasswordValid = await compare(password, user.password);
 
     if (!isPasswordValid) {
+      console.log('❌ Password verification failed');
       return NextResponse.json(
         { message: 'Invalid credentials' },
         { status: 401 }
       );
     }
+    
+    console.log('✅ Password verified successfully');
 
     // Generate JWT token
+    console.log('🔗 Generating JWT token...');
     const token = generateToken({
       userId: user.id,
       email: user.email,
       role: user.role
+    });
+    
+    console.log('✅ Token generated successfully:', {
+      tokenLength: token.length,
+      userId: user.id
     });
 
     // Create the response
@@ -73,8 +106,15 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 // 24 hours
     });
 
+    console.log('🎉 Login successful! Sending response with cookies.');
     return response;
   } catch (error) {
+    console.error('💥 Login error:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
+    
     return NextResponse.json(
       { message: 'An error occurred during login.' },
       { status: 500 }
