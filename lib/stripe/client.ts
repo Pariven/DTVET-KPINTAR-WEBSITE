@@ -10,7 +10,6 @@ export const getStripe = (): Stripe => {
     }
     
     stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-10-29.clover',
       typescript: true,
     });
   }
@@ -25,7 +24,7 @@ export const stripe = new Proxy({} as Stripe, {
 });
 
 // Get the app URL with production-ready defaults
-const getAppUrl = () => {
+export const getAppUrl = () => {
   // Try multiple environment variable options
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
                  process.env.NEXT_PUBLIC_BASE_URL || 
@@ -41,12 +40,18 @@ const getAppUrl = () => {
   }
   
   // Development fallback
-  return 'http://localhost:3000';
+  return 'http://localhost:3001';
 };
 
 export const STRIPE_CONFIG = {
   publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
   currency: 'myr',
-  successUrl: `${getAppUrl()}/dashboard/payments?success=true&session_id={CHECKOUT_SESSION_ID}`,
-  cancelUrl: `${getAppUrl()}/dashboard?canceled=true`,
+  get successUrl() {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+    return `${baseUrl}/dashboard/payments?success=true&session_id={CHECKOUT_SESSION_ID}`;
+  },
+  get cancelUrl() {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+    return `${baseUrl}/dashboard?canceled=true`;
+  },
 } as const;
