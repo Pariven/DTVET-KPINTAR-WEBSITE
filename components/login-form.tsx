@@ -76,8 +76,14 @@ export default function LoginForm() {
         }
 
         const data = await response.json();
-        if (!data.token) {
-          throw new Error('No token received from server');
+        
+        // Validate response data
+        if (!data.token || !data.user) {
+          throw new Error('Invalid response from server - missing token or user data');
+        }
+        
+        if (!data.user.name || !data.user.email) {
+          throw new Error('Invalid user data - missing name or email');
         }
         
         // Store token in both localStorage and cookie
@@ -91,38 +97,53 @@ export default function LoginForm() {
         localStorage.setItem('userEmail', data.user.email);
         localStorage.setItem('userName', data.user.name);
         
-        console.log('Login successful, token stored:', data.token);
-        console.log('Cookies after login:', document.cookie);
-        console.log('localStorage after login:', localStorage.getItem('token'));
-        
-        // Small delay to ensure cookies are set
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Check for redirect URL from multiple sources
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectFromUrl = urlParams.get('redirect');
-        const redirectFromSession = sessionStorage.getItem('redirectAfterLogin');
-        const finalRedirect = redirectFromUrl || redirectFromSession || '/dashboard';
-        
-        // Clean up session storage
-        if (redirectFromSession) {
-          sessionStorage.removeItem('redirectAfterLogin');
-        }
-        
-        console.log('Redirect sources:', {
-          fromUrl: redirectFromUrl,
-          fromSession: redirectFromSession,
-          final: finalRedirect
+        console.log('✅ Login successful:', {
+          tokenLength: data.token.length,
+          userEmail: data.user.email,
+          userName: data.user.name
         });
         
-        // Use Next.js router for internal navigation
-        if (finalRedirect.startsWith('/')) {
-          console.log('Using router navigation to:', finalRedirect);
-          router.push(finalRedirect);
-        } else {
-          // External URL - use window.location
-          console.log('Using window navigation to:', finalRedirect);
+        // Disable any potential bootstrap autofill overlays that might cause errors
+        try {
+          document.querySelectorAll('.bootstrap-autofill-overlay, [class*="autofill"]').forEach(el => {
+            const htmlEl = el as HTMLElement;
+            if (htmlEl.style) {
+              htmlEl.style.display = 'none';
+            }
+          });
+        } catch (e) {
+          console.warn('Could not hide autofill overlays:', e);
+        }
+        
+        // Small delay to ensure cookies are set and overlays are hidden
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Check for redirect URL from multiple sources
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectFromUrl = urlParams.get('redirect');
+          const redirectFromSession = sessionStorage.getItem('redirectAfterLogin');
+          const finalRedirect = redirectFromUrl || redirectFromSession || '/dashboard';
+          
+          // Clean up session storage
+          if (redirectFromSession) {
+            sessionStorage.removeItem('redirectAfterLogin');
+          }
+          
+          console.log('🚀 Navigating after login:', {
+            fromUrl: redirectFromUrl,
+            fromSession: redirectFromSession,
+            final: finalRedirect
+          });
+          
+          // Force a page reload to ensure clean state
+          console.log('🔄 Force refreshing to:', finalRedirect);
           window.location.href = finalRedirect;
+          
+        } catch (navError) {
+          console.error('❌ Navigation error, falling back to dashboard:', navError);
+          // Fallback navigation
+          window.location.href = '/dashboard';
         }
       } else {
         // Register
@@ -181,23 +202,25 @@ export default function LoginForm() {
           await new Promise(resolve => setTimeout(resolve, 100));
 
           // Check for redirect after registration
-          const urlParams = new URLSearchParams(window.location.search);
-          const redirectFromUrl = urlParams.get('redirect');
-          const redirectFromSession = sessionStorage.getItem('redirectAfterLogin');
-          const finalRedirect = redirectFromUrl || redirectFromSession || '/dashboard';
-          
-          // Clean up session storage
-          if (redirectFromSession) {
-            sessionStorage.removeItem('redirectAfterLogin');
-          }
+          try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectFromUrl = urlParams.get('redirect');
+            const redirectFromSession = sessionStorage.getItem('redirectAfterLogin');
+            const finalRedirect = redirectFromUrl || redirectFromSession || '/dashboard';
+            
+            // Clean up session storage
+            if (redirectFromSession) {
+              sessionStorage.removeItem('redirectAfterLogin');
+            }
 
-          // Use Next.js router for internal navigation
-          if (finalRedirect.startsWith('/')) {
-            console.log('Registration successful, using router navigation to:', finalRedirect);
-            router.push(finalRedirect);
-          } else {
-            console.log('Registration successful, using window navigation to:', finalRedirect);
+            console.log('🚀 Registration success, navigating to:', finalRedirect);
+            
+            // Force a page reload to ensure clean state
             window.location.href = finalRedirect;
+            
+          } catch (navError) {
+            console.error('❌ Navigation error after registration, falling back:', navError);
+            window.location.href = '/dashboard';
           }
         }
       }
