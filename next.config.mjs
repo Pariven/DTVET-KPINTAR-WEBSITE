@@ -63,6 +63,38 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client'],
   },
+  
+  // Security headers with Stripe support
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: `
+              default-src 'self';
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://r.stripe.com;
+              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+              font-src 'self' https://fonts.gstatic.com;
+              img-src 'self' data: https: blob:;
+              connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://r.stripe.com wss: https:;
+              frame-src 'self' https://js.stripe.com https://checkout.stripe.com;
+              form-action 'self' https://checkout.stripe.com;
+            `.replace(/\s+/g, ' ').trim()
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          }
+        ],
+      },
+    ];
+  },
 }
 
 export default nextConfig
