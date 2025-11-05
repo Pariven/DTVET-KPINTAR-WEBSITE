@@ -64,8 +64,13 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@prisma/client'],
   },
   
-  // Security headers with Stripe support
+  // Security headers - Disabled in development for Stripe compatibility
   async headers() {
+    // Disable strict CSP in development to prevent Stripe blocking
+    if (process.env.NODE_ENV === 'development') {
+      return [];
+    }
+    
     return [
       {
         source: '/:path*',
