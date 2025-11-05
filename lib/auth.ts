@@ -27,6 +27,10 @@ export function verifyToken(token: string) {
   try {
     return verify(token, JWT_SECRET);
   } catch (error) {
+    console.log('🔐 Token verification failed:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      tokenLength: token?.length || 0
+    });
     return null;
   }
 }

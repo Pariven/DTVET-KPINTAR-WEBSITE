@@ -27,7 +27,7 @@ export function middleware(request: NextRequest) {
   const finalToken = authToken || token || authHeader;
 
   // Debug logging for protected routes
-  if (path === '/checkout' || path === '/dashboard' || path.startsWith('/dashboard/') || path.includes('/api/stripe/')) {
+  if (path === '/checkout' || path === '/cart' || path === '/dashboard' || path.startsWith('/dashboard/') || path.includes('/api/stripe/')) {
     console.log(`🔍 ${path} Middleware Debug:`, {
       path,
       hasAuthToken: !!authToken,
@@ -41,9 +41,13 @@ export function middleware(request: NextRequest) {
   }
 
   if (!finalToken) {
+    console.log(`❌ ${path} No authentication token found, redirecting to login`);
     // Redirect to login instead of returning JSON error for page requests
     if (!path.startsWith('/api/')) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const loginUrl = new URL('/login', request.url);
+      // Save the current path for redirect after login
+      loginUrl.searchParams.set('redirect', path);
+      return NextResponse.redirect(loginUrl);
     }
     return new NextResponse(
       JSON.stringify({ message: 'Authentication required' }),
@@ -52,15 +56,27 @@ export function middleware(request: NextRequest) {
   }
 
   const decoded = verifyToken(finalToken);
-  if (!decoded) {// Redirect to login for invalid tokens on page requests
+  if (!decoded) {
+    console.log(`❌ ${path} Token verification failed:`, {
+      tokenLength: finalToken.length,
+      tokenStart: finalToken.substring(0, 50),
+      hasJwtSecret: !!process.env.JWT_SECRET,
+      jwtSecretLength: process.env.JWT_SECRET?.length || 0
+    });
+    // Redirect to login for invalid tokens on page requests
     if (!path.startsWith('/api/')) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', path);
+      loginUrl.searchParams.set('reason', 'invalid_token');
+      return NextResponse.redirect(loginUrl);
     }
     return new NextResponse(
       JSON.stringify({ message: 'Invalid token' }),
       { status: 401, headers: { 'content-type': 'application/json' } }
     );
-  }const requestHeaders = new Headers(request.headers);
+  }
+  
+  console.log(`✅ ${path} Token verified successfully for user:`, decoded);const requestHeaders = new Headers(request.headers);
   requestHeaders.set('user', JSON.stringify(decoded));
 
   // Continue to the protected route
@@ -76,7 +92,8 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/dashboard', // Protect the main dashboard page
-    // '/checkout', // Allow checkout page - authentication handled client-side
+    '/checkout', // Protect checkout page to require authentication
+    '/cart', // Protect cart page to require authentication
     '/api/cart/:path*',
     '/api/certifications/:path*',
     '/api/stripe/checkout/:path*',

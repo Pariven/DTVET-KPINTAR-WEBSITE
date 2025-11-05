@@ -28,23 +28,19 @@ export default function SimpleStripeButton({ items, total, onPaymentStart }: Sim
     setIsLoading(true);
 
     try {
-      // Get fresh token from multiple sources
-      const freshToken = localStorage.getItem('token') || 
-                        localStorage.getItem('auth-token') || 
-                        token || 
-                        // Try to get from cookies as a fallback
-                        document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+      // Get token using consistent approach - prioritize localStorage first
+      const freshToken = localStorage.getItem('token') || token;
       
       console.log('Payment Token Check:', {
         hasLocalStorageToken: !!localStorage.getItem('token'),
-        hasAuthToken: !!localStorage.getItem('auth-token'),
         hasStoreToken: !!token,
-        hasCookieToken: !!document.cookie.split('; ').find(row => row.startsWith('token=')),
         finalToken: !!freshToken
       });
       
       if (!freshToken) {
         toast.error('Authentication required. Please log in to proceed with payment.');
+        // Store current path for redirect after login
+        sessionStorage.setItem('redirectAfterLogin', '/checkout');
         window.location.href = '/login?redirect=/checkout&reason=no_token';
         setIsLoading(false);
         return;
@@ -70,15 +66,13 @@ export default function SimpleStripeButton({ items, total, onPaymentStart }: Sim
         
         if (response.status === 401) {
           toast.error('Your session has expired. Please log in again.');
-          // Clear all tokens
-          localStorage.removeItem('token');
-          localStorage.removeItem('auth-token');
+          // Clear all authentication data
+          localStorage.clear();
+          useAuthStore.getState().clearAuth();
           
-          // Clear the auth store
-          if (typeof window !== 'undefined') {
-            // Force reload to clear state
-            window.location.href = '/login?redirect=/checkout&reason=session_expired';
-          }
+          // Store redirect path and navigate to login
+          sessionStorage.setItem('redirectAfterLogin', '/checkout');
+          window.location.href = '/login?redirect=/checkout&reason=session_expired';
           return;
         }
         

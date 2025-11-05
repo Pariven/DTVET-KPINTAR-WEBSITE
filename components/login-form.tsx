@@ -98,16 +98,31 @@ export default function LoginForm() {
         // Small delay to ensure cookies are set
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Check if there's a redirect URL stored
-        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-        if (redirectUrl) {
+        // Check for redirect URL from multiple sources
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectFromUrl = urlParams.get('redirect');
+        const redirectFromSession = sessionStorage.getItem('redirectAfterLogin');
+        const finalRedirect = redirectFromUrl || redirectFromSession || '/dashboard';
+        
+        // Clean up session storage
+        if (redirectFromSession) {
           sessionStorage.removeItem('redirectAfterLogin');
-          console.log('Redirecting to:', redirectUrl);
-          window.location.href = redirectUrl;
+        }
+        
+        console.log('Redirect sources:', {
+          fromUrl: redirectFromUrl,
+          fromSession: redirectFromSession,
+          final: finalRedirect
+        });
+        
+        // Use Next.js router for internal navigation
+        if (finalRedirect.startsWith('/')) {
+          console.log('Using router navigation to:', finalRedirect);
+          router.push(finalRedirect);
         } else {
-          // Redirect to dashboard after login using window.location for hard refresh
-          console.log('Redirecting to dashboard...');
-          window.location.href = '/dashboard';
+          // External URL - use window.location
+          console.log('Using window navigation to:', finalRedirect);
+          window.location.href = finalRedirect;
         }
       } else {
         // Register
@@ -165,9 +180,25 @@ export default function LoginForm() {
           // Small delay to ensure cookies are set
           await new Promise(resolve => setTimeout(resolve, 100));
 
-          // Redirect to dashboard after successful auto-login using hard refresh
-          console.log('Registration successful, redirecting to dashboard...');
-          window.location.href = '/dashboard';
+          // Check for redirect after registration
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectFromUrl = urlParams.get('redirect');
+          const redirectFromSession = sessionStorage.getItem('redirectAfterLogin');
+          const finalRedirect = redirectFromUrl || redirectFromSession || '/dashboard';
+          
+          // Clean up session storage
+          if (redirectFromSession) {
+            sessionStorage.removeItem('redirectAfterLogin');
+          }
+
+          // Use Next.js router for internal navigation
+          if (finalRedirect.startsWith('/')) {
+            console.log('Registration successful, using router navigation to:', finalRedirect);
+            router.push(finalRedirect);
+          } else {
+            console.log('Registration successful, using window navigation to:', finalRedirect);
+            window.location.href = finalRedirect;
+          }
         }
       }
     } catch (error) {

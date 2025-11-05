@@ -57,34 +57,27 @@ export default function StudentDashboard() {
   const [selectedLanguage, setSelectedLanguage] = useState("english")
 
   useEffect(() => {
-    // Improved authentication check with better fallback logic
-    const loggedIn = localStorage.getItem("isLoggedIn")
-    const userEmail = localStorage.getItem("userEmail") 
-    const userName = localStorage.getItem("userName")
+    // Simplified authentication check to prevent redirect loops
     const storedToken = localStorage.getItem("token")
+    const userName = localStorage.getItem("userName") 
+    const userEmail = localStorage.getItem("userEmail")
     const userLanguage = localStorage.getItem("userLanguage") || "english"
 
-    // More flexible authentication check - any valid token or localStorage auth
-    const isAuthenticatedByLocalStorage = loggedIn === "true" && userEmail && userName
-    const isAuthenticatedByStore = token && user
-    const hasStoredToken = !!storedToken
-    
     console.log('🔍 Dashboard Auth Check:', {
-      isAuthenticatedByLocalStorage,
-      isAuthenticatedByStore,
-      hasStoredToken,
-      loggedIn,
-      hasUserEmail: !!userEmail,
+      hasStoredToken: !!storedToken,
       hasUserName: !!userName,
-      hasToken: !!token,
-      hasUser: !!user
+      hasUserEmail: !!userEmail,
+      storeToken: !!token,
+      storeUser: !!user
     });
 
-    // More permissive check - authenticate if we have any valid sign of authentication
-    if (isAuthenticatedByLocalStorage || isAuthenticatedByStore || hasStoredToken) {
+    // Primary authentication: token from localStorage or auth store
+    const hasValidAuth = storedToken || (token && user)
+    
+    if (hasValidAuth) {
       setIsAuthenticated(true)
       
-      // Use data from localStorage if available, otherwise from auth store
+      // Use stored user data or fallback to store data
       const displayName = userName || user?.name || "User"
       const displayEmail = userEmail || user?.email || ""
       
@@ -96,21 +89,25 @@ export default function StudentDashboard() {
       setNewName(displayName)
       setSelectedLanguage(userLanguage)
       
-      // Fetch real payment history from API if we have a token
-      if (token || storedToken) {
+      // Fetch payment history if we have a token
+      if (storedToken || token) {
         fetchPaymentHistory()
       }
     } else {
-      // Only redirect to login if we're sure there's no authentication
-      console.log('❌ No authentication found, redirecting to login...');
-      router.push("/login")
+      console.log('❌ No valid authentication, redirecting to login');
+      // Give middleware a chance to handle this first
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }, 100);
     }
     setLoading(false)
-  }, [router, token, user])
+  }, [token, user])
 
   // Fetch payment history from API
   const fetchPaymentHistory = async () => {
-    const authToken = token || localStorage.getItem("token");
+    const authToken = localStorage.getItem("token") || token;
     if (!authToken) {
       console.log('No token available for payment history');
       return;
@@ -142,8 +139,13 @@ export default function StudentDashboard() {
           totalSpent: Math.round(totalSpent),
           totalCourses,
         }));
+      } else if (response.status === 401) {
+        console.error('Authentication failed for payment history');
+        // Token might be invalid, redirect to login
+        localStorage.clear();
+        window.location.href = '/login';
       } else {
-        console.error('Failed to fetch payment history');
+        console.error('Failed to fetch payment history:', response.status);
       }
     } catch (error) {
       console.error('Error fetching payment history:', error);
