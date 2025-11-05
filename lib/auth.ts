@@ -27,8 +27,13 @@ export function verifyToken(token: string) {
   try {
     return verify(token, JWT_SECRET);
   } catch (error) {
+    // Safe error handling without instanceof check
+    const errorMessage = error && typeof error === 'object' && 'message' in error 
+      ? (error as any).message 
+      : String(error);
+      
     console.log('🔐 Token verification failed:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
       tokenLength: token?.length || 0
     });
     return null;

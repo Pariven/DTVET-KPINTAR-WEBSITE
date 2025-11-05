@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useAuthStore } from "@/lib/store"
+import useAuthRedirect from "@/hooks/use-auth-redirect"
 
 // Define a type for purchase receipts
 interface PurchaseReceipt {
@@ -28,13 +29,16 @@ interface PurchaseReceipt {
 
 export default function StudentDashboard() {
   const router = useRouter()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
   const { cartItems } = useCart()
   const [purchaseHistory, setPurchaseHistory] = useState<PurchaseReceipt[]>([])
   const [purchaseLoading, setPurchaseLoading] = useState(false)
-  const { token, user } = useAuthStore()
+  
+  // Use simple authentication hook
+  const { isAuthenticated, isLoading, user, token } = useAuthRedirect({
+    redirectTo: '/login',
+    allowUnauthenticated: false
+  })
 
   // Mock user data
   const [userData, setUserData] = useState({
@@ -56,54 +60,25 @@ export default function StudentDashboard() {
   const [newName, setNewName] = useState("")
   const [selectedLanguage, setSelectedLanguage] = useState("english")
 
+  // Initialize user data when authentication is confirmed
   useEffect(() => {
-    // Simplified authentication check to prevent redirect loops
-    const storedToken = localStorage.getItem("token")
-    const userName = localStorage.getItem("userName") 
-    const userEmail = localStorage.getItem("userEmail")
-    const userLanguage = localStorage.getItem("userLanguage") || "english"
-
-    console.log('🔍 Dashboard Auth Check:', {
-      hasStoredToken: !!storedToken,
-      hasUserName: !!userName,
-      hasUserEmail: !!userEmail,
-      storeToken: !!token,
-      storeUser: !!user
-    });
-
-    // Primary authentication: token from localStorage or auth store
-    const hasValidAuth = storedToken || (token && user)
-    
-    if (hasValidAuth) {
-      setIsAuthenticated(true)
-      
-      // Use stored user data or fallback to store data
-      const displayName = userName || user?.name || "User"
-      const displayEmail = userEmail || user?.email || ""
+    if (isAuthenticated && user) {
+      const userName = localStorage.getItem("userName") || user.name
+      const userEmail = localStorage.getItem("userEmail") || user.email
+      const userLanguage = localStorage.getItem("userLanguage") || "english"
       
       setUserData((prev) => ({
         ...prev,
-        name: displayName,
-        email: displayEmail,
+        name: userName,
+        email: userEmail,
       }))
-      setNewName(displayName)
+      setNewName(userName)
       setSelectedLanguage(userLanguage)
       
-      // Fetch payment history if we have a token
-      if (storedToken || token) {
-        fetchPaymentHistory()
-      }
-    } else {
-      console.log('❌ No valid authentication, redirecting to login');
-      // Give middleware a chance to handle this first
-      setTimeout(() => {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-      }, 100);
+      // Fetch payment history
+      fetchPaymentHistory()
     }
-    setLoading(false)
-  }, [token, user])
+  }, [isAuthenticated, user])
 
   // Fetch payment history from API
   const fetchPaymentHistory = async () => {
@@ -236,7 +211,7 @@ export default function StudentDashboard() {
     { id: "settings", label: "Settings", icon: Settings },
   ]
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen pt-32 pb-20 px-4 flex items-center justify-center">
         <div className="text-white text-xl font-barlow">Loading dashboard...</div>
@@ -245,7 +220,11 @@ export default function StudentDashboard() {
   }
 
   if (!isAuthenticated) {
-    return null // Will redirect to login
+    return (
+      <div className="min-h-screen pt-32 pb-20 px-4 flex items-center justify-center">
+        <div className="text-white text-xl font-barlow">Redirecting to login...</div>
+      </div>
+    )
   }
 
   return (

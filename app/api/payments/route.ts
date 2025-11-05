@@ -18,16 +18,22 @@ export async function GET(request: Request) {
       );
     }
 
-    // Verify token
-    const decoded = verifyToken(token);
-    if (!decoded || typeof decoded === 'string') {
+    // Verify token - simplified approach
+    let decoded;
+    try {
+      decoded = verifyToken(token);
+      if (!decoded || typeof decoded === 'string') {
+        throw new Error('Token verification failed');
+      }
+    } catch (error) {
+      console.error('❌ Payments API - Token verification error:', error);
       return NextResponse.json(
-        { error: 'Invalid token' },
+        { error: 'Invalid or expired token. Please login again.' },
         { status: 401 }
       );
     }
 
-    const userId = decoded.userId;
+    const userId = decoded.userId || decoded.sub;
 
     // Fetch user payments
     const payments = await PaymentService.getUserPayments(userId);

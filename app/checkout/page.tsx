@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/cart-context';
 import { useAuthStore } from '@/lib/store';
+import useAuthRedirect from '@/hooks/use-auth-redirect';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import SimpleStripeButton from '@/components/payment/simple-stripe-button';
@@ -17,9 +18,14 @@ import { Button } from '@/components/ui/button';
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, removeFromCart, clearCart } = useCart();
-  const { token } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [paymentCancelled, setPaymentCancelled] = useState(false);
+  
+  // Use simple authentication hook
+  const { isAuthenticated, isLoading, token } = useAuthRedirect({
+    redirectTo: '/login',
+    allowUnauthenticated: false
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -33,20 +39,20 @@ export default function CheckoutPage() {
     }
   }, []);
 
-
-
-  useEffect(() => {
-    if (mounted && !token) {
-      router.push('/login?redirect=/checkout');
-    }
-  }, [token, router, mounted]);
-
-  if (!mounted) {
-    return null; // Prevent hydration issues
+  if (!mounted || isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl font-barlow">Loading checkout...</div>
+      </div>
+    );
   }
 
-  if (!token) {
-    return null; // Will redirect
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl font-barlow">Redirecting to login...</div>
+      </div>
+    );
   }
 
   const total = cartItems.reduce((sum: number, item: any) => sum + item.price, 0);
