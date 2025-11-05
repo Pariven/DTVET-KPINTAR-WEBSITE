@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { PaymentService } from '@/lib/services/payment.service';
-import { getStripe } from '@/lib/stripe/client';
+import { getStripe, getAppUrl } from '@/lib/stripe/client';
 import prisma from '@/lib/prisma';
 
 /**
@@ -13,12 +13,13 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('session_id');
+    const baseUrl = getAppUrl(); // Get the correct base URL
     
-    console.log('🎯 Payment success endpoint called:', { sessionId });
+    console.log('🎯 Payment success endpoint called:', { sessionId, baseUrl });
 
     if (!sessionId) {
       console.log('❌ No session ID provided');
-      return NextResponse.redirect(new URL('/dashboard/payments?error=no_session', request.url));
+      return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=no_session`);
     }
 
     // Get auth token from cookies
@@ -27,14 +28,14 @@ export async function GET(request: Request) {
 
     if (!token) {
       console.log('❌ No authentication token found');
-      return NextResponse.redirect(new URL('/login?redirect=/dashboard/payments', request.url));
+      return NextResponse.redirect(`${baseUrl}/login?redirect=/dashboard/payments`);
     }
 
     // Verify token
     const decoded = verifyToken(token);
     if (!decoded || typeof decoded === 'string') {
       console.log('❌ Invalid token');
-      return NextResponse.redirect(new URL('/login?redirect=/dashboard/payments', request.url));
+      return NextResponse.redirect(`${baseUrl}/login?redirect=/dashboard/payments`);
     }
 
     const userId = decoded.userId;
@@ -84,22 +85,23 @@ export async function GET(request: Request) {
           }
 
           // Redirect to dashboard with success message
-          return NextResponse.redirect(new URL('/dashboard/payments?success=true', request.url));
+          return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true`);
         } else {
           console.log('❌ Payment record not found in database');
-          return NextResponse.redirect(new URL('/dashboard/payments?error=payment_not_found', request.url));
+          return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=payment_not_found`);
         }
       } else {
         console.log('❌ Payment not completed, status:', session.payment_status);
-        return NextResponse.redirect(new URL('/dashboard/payments?error=payment_incomplete', request.url));
+        return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=payment_incomplete`);
       }
     } catch (stripeError) {
       console.error('💥 Stripe API error:', stripeError);
-      return NextResponse.redirect(new URL('/dashboard/payments?error=stripe_error', request.url));
+      return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=stripe_error`);
     }
   } catch (error) {
     console.error('💥 Payment success handler error:', error);
-    return NextResponse.redirect(new URL('/dashboard/payments?error=server_error', request.url));
+    const baseUrl = getAppUrl(); // Redeclare in catch block
+    return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=server_error`);
   }
 }
 

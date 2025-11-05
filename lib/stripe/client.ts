@@ -40,7 +40,7 @@ export const getAppUrl = () => {
   }
   
   // Development fallback
-  return 'http://localhost:3001';
+  return 'http://localhost:3000';
 };
 
 export const STRIPE_CONFIG = {

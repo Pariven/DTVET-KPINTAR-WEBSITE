@@ -18,22 +18,16 @@ export async function GET(request: Request) {
       );
     }
 
-    // Verify token - simplified approach
-    let decoded;
-    try {
-      decoded = verifyToken(token);
-      if (!decoded || typeof decoded === 'string') {
-        throw new Error('Token verification failed');
-      }
-    } catch (error) {
-      console.error('❌ Payments API - Token verification error:', error);
+    // Verify token
+    const decoded = verifyToken(token);
+    if (!decoded || typeof decoded === 'string') {
       return NextResponse.json(
-        { error: 'Invalid or expired token. Please login again.' },
+        { error: 'Invalid token' },
         { status: 401 }
       );
     }
 
-    const userId = decoded.userId || decoded.sub;
+    const userId = decoded.userId;
 
     // Fetch user payments
     const payments = await PaymentService.getUserPayments(userId);
@@ -41,8 +35,31 @@ export async function GET(request: Request) {
     return NextResponse.json({ payments });
   } catch (error) {
     console.error('Error fetching payments:', error);
+    
+    // Handle specific database connection errors
+    if (error instanceof Error) {
+      if (error.message.includes('Can\'t reach database server')) {
+        console.log('🔄 Database temporarily unavailable - returning empty payments list');
+        return NextResponse.json({ 
+          payments: [],
+          error: 'Database temporarily unavailable. Please try again later.'
+        }, { status: 200 });
+      }
+      
+      if (error.message.includes('PrismaClientInitializationError')) {
+        console.log('🔄 Database connection issue - returning fallback response');
+        return NextResponse.json({ 
+          payments: [],
+          error: 'Payment history temporarily unavailable.'
+        }, { status: 200 });
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch payments' },
+      { 
+        error: 'Failed to fetch payments',
+        payments: [] // Provide fallback empty array
+      },
       { status: 500 }
     );
   }
