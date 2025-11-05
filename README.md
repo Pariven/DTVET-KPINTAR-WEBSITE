@@ -1,24 +1,31 @@
-# Animated 3d background
+# 🎓 DTVET - Digital TVET Certification Platform
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://typescriptlang.org)
+[![Prisma](https://img.shields.io/badge/Prisma-6-white?style=for-the-badge&logo=prisma)](https://prisma.io)
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/yeperupuluthi028-gmailcoms-projects/v0-animated-3d-background)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/iaGAZN1Kxyc)
+## 🌟 **Overview**
 
-## Overview
+**Empowering ASEAN's Future Workforce with Digital TVET Certifications**
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+A comprehensive certification platform offering industry-leading certifications from:
+- 🎨 **Adobe** (Creative Suite, Design)
+- 💻 **Microsoft** (Office, Azure, Development)  
+- 🌐 **Cisco** (Networking, Security)
+- 🍎 **Apple** (iOS Development, Design)
+- **13+ Industry Partners**
 
-## Deployment
+## 🚀 **Quick Deploy**
 
-Your project is live at:
+### **Deploy to Vercel (Recommended)**
 
-**[https://vercel.com/yeperupuluthi028-gmailcoms-projects/v0-animated-3d-background](https://vercel.com/yeperupuluthi028-gmailcoms-projects/v0-animated-3d-background)**
+1. **Fork this repository**
+2. **Connect to Vercel**: [Deploy on Vercel](https://vercel.com/new)
+3. **Add Environment Variables** (see [DEPLOYMENT.md](./DEPLOYMENT.md))
+4. **Deploy!** 🎉
 
-## Build your app
-
-Continue building your app on:
+### **Manual Setup**
 
 **[https://v0.dev/chat/projects/iaGAZN1Kxyc](https://v0.dev/chat/projects/iaGAZN1Kxyc)**
 
