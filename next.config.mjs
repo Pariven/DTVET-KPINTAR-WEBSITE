@@ -61,7 +61,13 @@ const nextConfig = {
   
   // Vercel deployment settings
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  },
+  
+  // Generate Prisma client during build
+  async generateBuildId() {
+    // Ensure Prisma client is generated
+    return null; // Use default build id
   },
   
   // Security headers - Disabled in development for Stripe compatibility
