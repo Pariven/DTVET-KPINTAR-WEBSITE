@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [countdown, setCountdown] = useState(3);
@@ -76,5 +76,31 @@ export default function PaymentSuccessPage() {
       
       <Footer />
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <Navbar />
+        <main className="container mx-auto px-4 py-24">
+          <div className="max-w-2xl mx-auto">
+            <Card className="bg-white/5 border-white/10">
+              <CardContent className="p-12 text-center">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gray-500/20 rounded-full flex items-center justify-center">
+                  <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
+                </div>
+                <h1 className="text-2xl font-bold text-white mb-4">Loading...</h1>
+                <p className="text-gray-300">Please wait while we confirm your payment</p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }

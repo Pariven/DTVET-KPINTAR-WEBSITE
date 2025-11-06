@@ -36,7 +36,7 @@ export const getAppUrl = () => {
   // Try multiple environment variable options for production
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
                  process.env.NEXT_PUBLIC_BASE_URL || 
-                 process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+                 (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
   
   console.log('🌐 getAppUrl Debug (Production):', {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

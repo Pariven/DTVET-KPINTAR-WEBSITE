@@ -4,6 +4,9 @@ import { verifyToken } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
 /**
  * Enhanced Dashboard API - Works with current Neon DB schema
  * Analyzes existing payment data to provide comprehensive user insights

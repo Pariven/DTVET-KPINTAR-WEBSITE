@@ -3,6 +3,9 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { PaymentService } from '@/lib/services/payment.service';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Get auth token

@@ -4,6 +4,9 @@ import { verifyToken } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
 /**
  * Get enhanced user dashboard data
  * Works with current schema while providing comprehensive user analytics

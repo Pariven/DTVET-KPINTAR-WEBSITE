@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/client"
 }
 
 datasource db {
@@ -10,14 +9,14 @@ datasource db {
 }
 
 model CartItem {
-  id                String   @id
+  id                String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   userId            String
   certificationId   String
   certificationName String
   price             Float
   logoUrl           String?
   createdAt         DateTime @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime @updatedAt
   provider          String?  @default("Unknown")
   category          String?
   examCode          String?
@@ -27,7 +26,7 @@ model CartItem {
 }
 
 model Payment {
-  id                 String               @id
+  id                 String               @id @default(dbgenerated("(gen_random_uuid())::text"))
   userId             String
   stripeSessionId    String               @unique
   stripePaymentId    String?
@@ -36,7 +35,7 @@ model Payment {
   status             PaymentStatus        @default(PENDING)
   items              Json
   createdAt          DateTime             @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime             @updatedAt
   receiptNumber      String?              @unique
   paymentMethod      String?
   coursesCount       Int?                 @default(0)
@@ -48,12 +47,12 @@ model Payment {
 }
 
 model User {
-  id                 String               @id
+  id                 String               @id @default(dbgenerated("(gen_random_uuid())::text"))
   name               String
   email              String               @unique
   password           String
   createdAt          DateTime             @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime             @updatedAt
   role               Role                 @default(USER)
   phone              String?
   language           String?              @default("english")
@@ -94,7 +93,7 @@ model course_enrollments {
 }
 
 model achievements {
-  id               String    @id
+  id               String    @id @default(dbgenerated("(gen_random_uuid())::text"))
   userId           String
   type             String
   title            String
@@ -114,7 +113,7 @@ model achievements {
 }
 
 model user_progress {
-  id                 String             @id
+  id                 String             @id @default(dbgenerated("(gen_random_uuid())::text"))
   userId             String
   enrollmentId       String
   progressPercent    Int                @default(0)
@@ -125,7 +124,7 @@ model user_progress {
   notes              String?
   bookmarks          Json?
   createdAt          DateTime           @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime           @updatedAt
   course_enrollments course_enrollments @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   User               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
