@@ -69,29 +69,7 @@ function PaymentsContent() {
     }
   };
 
-  const completeTestPayment = async () => {
-    try {const response = await fetch('/api/payments/complete-test', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
 
-      const result = await response.json();
-      
-      if (response.ok && result.success) {
-        toast.success('Test payment completed successfully!');
-        clearCart(); // Clear cart
-        fetchPayments(); // Refresh payment history
-      } else {
-        toast.error(result.message || 'No pending payments found');
-      }
-    } catch (error) {
-      console.error('Error completing test payment:', error);
-      toast.error('Error completing test payment');
-    }
-  };
 
   useEffect(() => {
     if (!mounted) return;
@@ -105,8 +83,14 @@ function PaymentsContent() {
     const warning = searchParams.get('warning');
     
     if (success === 'true') {
-      // Payment was successful
-      clearCart();
+      // Payment was successful - clear cart ONLY ONCE
+      const hasCleared = sessionStorage.getItem('cart-cleared-' + paymentId);
+      if (!hasCleared) {
+        clearCart();
+        if (paymentId) {
+          sessionStorage.setItem('cart-cleared-' + paymentId, 'true');
+        }
+      }
       
       // Show enhanced success message with course and payment details
       let successMessage = '🎉 Payment successful! Your certifications are now available.';
@@ -148,6 +132,13 @@ function PaymentsContent() {
         console.log('🔄 Secondary payment data refresh...');
         fetchPayments();
       }, 3000);
+      
+      // Clean up cart clearing flag after some time to prevent it from persisting forever
+      setTimeout(() => {
+        if (paymentId) {
+          sessionStorage.removeItem('cart-cleared-' + paymentId);
+        }
+      }, 30000); // Clean up after 30 seconds
     } else if (error) {
       // Handle different error types
       let errorMessage = 'Payment processing failed. Please try again.';
@@ -177,7 +168,7 @@ function PaymentsContent() {
       url.searchParams.delete('error');
       window.history.replaceState({}, '', url.toString());
     }
-  }, [searchParams, mounted, clearCart]);
+  }, [searchParams, mounted]); // Removed clearCart from dependencies to prevent infinite loop
 
   useEffect(() => {
     if (!mounted) return;
@@ -258,7 +249,7 @@ function PaymentsContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
         <Navbar />
-        <main className="container mx-auto px-4 py-24">
+        <main className="container mx-auto px-4 pt-32 pb-24">
           <div className="max-w-6xl mx-auto">
             <Card className="bg-white/5 border-white/10">
               <CardContent className="p-12 text-center">
@@ -280,20 +271,12 @@ function PaymentsContent() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       <Navbar />
 
-      <main className="container mx-auto px-4 py-24">
+      <main className="container mx-auto px-4 pt-32 pb-24">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 font-barlow">Payment History</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 font-barlow">Payment History</h1>
               <p className="text-gray-400">View all your certification purchases</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={completeTestPayment}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Complete Test Payment
-              </button>
             </div>
           </div>
 

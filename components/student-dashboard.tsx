@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useAuthStore } from "@/lib/store"
-import useAuthRedirect from "@/hooks/use-auth-redirect"
 
 // Define a type for purchase receipts
 interface PurchaseReceipt {
@@ -29,16 +28,13 @@ interface PurchaseReceipt {
 
 export default function StudentDashboard() {
   const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
   const { cartItems } = useCart()
   const [purchaseHistory, setPurchaseHistory] = useState<PurchaseReceipt[]>([])
   const [purchaseLoading, setPurchaseLoading] = useState(false)
-  
-  // Use simple authentication hook
-  const { isAuthenticated, isLoading, user, token } = useAuthRedirect({
-    redirectTo: '/login',
-    allowUnauthenticated: false
-  })
+  const { token, user } = useAuthStore()
 
   // Mock user data
   const [userData, setUserData] = useState({
@@ -60,25 +56,54 @@ export default function StudentDashboard() {
   const [newName, setNewName] = useState("")
   const [selectedLanguage, setSelectedLanguage] = useState("english")
 
-  // Initialize user data when authentication is confirmed
   useEffect(() => {
-    if (isAuthenticated && user) {
-      const userName = localStorage.getItem("userName") || user.name
-      const userEmail = localStorage.getItem("userEmail") || user.email
-      const userLanguage = localStorage.getItem("userLanguage") || "english"
+    // Simplified authentication check to prevent redirect loops
+    const storedToken = localStorage.getItem("token")
+    const userName = localStorage.getItem("userName") 
+    const userEmail = localStorage.getItem("userEmail")
+    const userLanguage = localStorage.getItem("userLanguage") || "english"
+
+    console.log('🔍 Dashboard Auth Check:', {
+      hasStoredToken: !!storedToken,
+      hasUserName: !!userName,
+      hasUserEmail: !!userEmail,
+      storeToken: !!token,
+      storeUser: !!user
+    });
+
+    // Primary authentication: token from localStorage or auth store
+    const hasValidAuth = storedToken || (token && user)
+    
+    if (hasValidAuth) {
+      setIsAuthenticated(true)
+      
+      // Use stored user data or fallback to store data
+      const displayName = userName || user?.name || "User"
+      const displayEmail = userEmail || user?.email || ""
       
       setUserData((prev) => ({
         ...prev,
-        name: userName,
-        email: userEmail,
+        name: displayName,
+        email: displayEmail,
       }))
-      setNewName(userName)
+      setNewName(displayName)
       setSelectedLanguage(userLanguage)
       
-      // Fetch payment history
-      fetchPaymentHistory()
+      // Fetch payment history if we have a token
+      if (storedToken || token) {
+        fetchPaymentHistory()
+      }
+    } else {
+      console.log('❌ No valid authentication, redirecting to login');
+      // Give middleware a chance to handle this first
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }, 100);
     }
-  }, [isAuthenticated, user])
+    setLoading(false)
+  }, [token, user])
 
   // Fetch payment history from API
   const fetchPaymentHistory = async () => {
@@ -211,7 +236,7 @@ export default function StudentDashboard() {
     { id: "settings", label: "Settings", icon: Settings },
   ]
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen pt-32 pb-20 px-4 flex items-center justify-center">
         <div className="text-white text-xl font-barlow">Loading dashboard...</div>
@@ -220,11 +245,7 @@ export default function StudentDashboard() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen pt-32 pb-20 px-4 flex items-center justify-center">
-        <div className="text-white text-xl font-barlow">Redirecting to login...</div>
-      </div>
-    )
+    return null // Will redirect to login
   }
 
   return (
@@ -396,12 +417,6 @@ export default function StudentDashboard() {
                         </div>
                         <div className="text-right">
                           <div className="text-[#F4BB44] font-bold text-lg">RM{course.price.toFixed(2)}</div>
-                          <Button
-                            size="sm"
-                            className="mt-2 bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            Access Course
-                          </Button>
                         </div>
                       </div>
                     </CardContent>

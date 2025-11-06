@@ -92,6 +92,36 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.CartItemScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  certificationId: 'certificationId',
+  certificationName: 'certificationName',
+  price: 'price',
+  logoUrl: 'logoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  provider: 'provider',
+  category: 'category',
+  examCode: 'examCode'
+};
+
+exports.Prisma.PaymentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  stripeSessionId: 'stripeSessionId',
+  stripePaymentId: 'stripePaymentId',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  items: 'items',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  receiptNumber: 'receiptNumber',
+  paymentMethod: 'paymentMethod',
+  coursesCount: 'coursesCount'
+};
+
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -99,7 +129,62 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  role: 'role'
+  role: 'role',
+  phone: 'phone',
+  language: 'language',
+  country: 'country',
+  occupation: 'occupation',
+  totalspent: 'totalspent',
+  coursesowned: 'coursesowned',
+  profileImage: 'profileImage',
+  city: 'city',
+  company: 'company',
+  linkedIn: 'linkedIn',
+  bio: 'bio',
+  lastLoginAt: 'lastLoginAt',
+  totalSpent: 'totalSpent',
+  coursesOwned: 'coursesOwned'
+};
+
+exports.Prisma.Course_enrollmentsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  paymentId: 'paymentId',
+  certificationName: 'certificationName',
+  provider: 'provider',
+  price: 'price',
+  status: 'status',
+  enrolledAt: 'enrolledAt'
+};
+
+exports.Prisma.AchievementsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  title: 'title',
+  description: 'description',
+  certificationId: 'certificationId',
+  badgeUrl: 'badgeUrl',
+  certificateUrl: 'certificateUrl',
+  points: 'points',
+  issuedAt: 'issuedAt',
+  expiresAt: 'expiresAt',
+  verificationCode: 'verificationCode'
+};
+
+exports.Prisma.User_progressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  enrollmentId: 'enrollmentId',
+  progressPercent: 'progressPercent',
+  timeSpentMinutes: 'timeSpentMinutes',
+  lastAccessed: 'lastAccessed',
+  modulesCompleted: 'modulesCompleted',
+  totalModules: 'totalModules',
+  notes: 'notes',
+  bookmarks: 'bookmarks',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -107,17 +192,49 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.Role = exports.$Enums.Role = {
   USER: 'USER',
   ADMIN: 'ADMIN'
 };
 
+exports.PaymentStatus = exports.$Enums.PaymentStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+};
+
 exports.Prisma.ModelName = {
-  User: 'User'
+  CartItem: 'CartItem',
+  Payment: 'Payment',
+  User: 'User',
+  course_enrollments: 'course_enrollments',
+  achievements: 'achievements',
+  user_progress: 'user_progress'
 };
 /**
  * Create the Client
@@ -130,7 +247,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\IT8\\Downloads\\DTVET-KPINTAR-master\\DTVET-KPINTAR-master\\prisma\\generated\\client",
+      "value": "C:\\Users\\Pariventheswaran\\Desktop\\DTVET-KPINTAR-master (3)\\DTVET-KPINTAR-master (3)\\DTVET-KPINTAR-master (2)\\DTVET-KPINTAR-master\\DTVET-KPINTAR-master\\prisma\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -144,7 +261,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\IT8\\Downloads\\DTVET-KPINTAR-master\\DTVET-KPINTAR-master\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Pariventheswaran\\Desktop\\DTVET-KPINTAR-master (3)\\DTVET-KPINTAR-master (3)\\DTVET-KPINTAR-master (2)\\DTVET-KPINTAR-master\\DTVET-KPINTAR-master\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -167,13 +284,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"./generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  name      String\n  email     String   @unique\n  password  String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  role      Role     @default(USER)\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n",
-  "inlineSchemaHash": "afd265f4b84fa27fbc83cf188586fb45ce2c6d0ce7bc854344b86712d71c29e8",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"./generated/client\"\n}\n\ndatasource db {\n  provider  = \"postgresql\"\n  url       = env(\"DATABASE_URL\")\n  directUrl = env(\"DIRECT_URL\")\n}\n\nmodel CartItem {\n  id                String   @id\n  userId            String\n  certificationId   String\n  certificationName String\n  price             Float\n  logoUrl           String?\n  createdAt         DateTime @default(now())\n  updatedAt         DateTime\n  provider          String?  @default(\"Unknown\")\n  category          String?\n  examCode          String?\n  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId])\n}\n\nmodel Payment {\n  id                 String               @id\n  userId             String\n  stripeSessionId    String               @unique\n  stripePaymentId    String?\n  amount             Float\n  currency           String               @default(\"myr\")\n  status             PaymentStatus        @default(PENDING)\n  items              Json\n  createdAt          DateTime             @default(now())\n  updatedAt          DateTime\n  receiptNumber      String?              @unique\n  paymentMethod      String?\n  coursesCount       Int?                 @default(0)\n  User               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)\n  course_enrollments course_enrollments[]\n\n  @@index([stripeSessionId])\n  @@index([userId])\n}\n\nmodel User {\n  id                 String               @id\n  name               String\n  email              String               @unique\n  password           String\n  createdAt          DateTime             @default(now())\n  updatedAt          DateTime\n  role               Role                 @default(USER)\n  phone              String?\n  language           String?              @default(\"english\")\n  country            String?\n  occupation         String?\n  totalspent         Float?               @default(0)\n  coursesowned       Int?                 @default(0)\n  profileImage       String?\n  city               String?\n  company            String?\n  linkedIn           String?\n  bio                String?\n  lastLoginAt        DateTime?\n  totalSpent         Float?               @default(0)\n  coursesOwned       Int?                 @default(0)\n  CartItem           CartItem[]\n  Payment            Payment[]\n  achievements       achievements[]\n  course_enrollments course_enrollments[]\n  user_progress      user_progress[]\n}\n\nmodel course_enrollments {\n  id                String          @id @default(dbgenerated(\"(gen_random_uuid())::text\"))\n  userId            String\n  paymentId         String\n  certificationName String\n  provider          String\n  price             Float\n  status            String?         @default(\"active\")\n  enrolledAt        DateTime?       @default(now())\n  Payment           Payment         @relation(fields: [paymentId], references: [id], onDelete: Cascade, onUpdate: NoAction)\n  User              User            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)\n  user_progress     user_progress[]\n\n  @@index([paymentId])\n  @@index([userId])\n}\n\nmodel achievements {\n  id               String    @id\n  userId           String\n  type             String\n  title            String\n  description      String\n  certificationId  String?\n  badgeUrl         String?\n  certificateUrl   String?\n  points           Int       @default(0)\n  issuedAt         DateTime  @default(now())\n  expiresAt        DateTime?\n  verificationCode String?   @unique\n  User             User      @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([type])\n  @@index([userId])\n  @@index([verificationCode])\n}\n\nmodel user_progress {\n  id                 String             @id\n  userId             String\n  enrollmentId       String\n  progressPercent    Int                @default(0)\n  timeSpentMinutes   Int                @default(0)\n  lastAccessed       DateTime           @default(now())\n  modulesCompleted   Int                @default(0)\n  totalModules       Int                @default(10)\n  notes              String?\n  bookmarks          Json?\n  createdAt          DateTime           @default(now())\n  updatedAt          DateTime\n  course_enrollments course_enrollments @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)\n  User               User               @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([userId, enrollmentId])\n  @@index([enrollmentId])\n  @@index([userId])\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n\nenum PaymentStatus {\n  PENDING\n  COMPLETED\n  FAILED\n  REFUNDED\n}\n",
+  "inlineSchemaHash": "f4f67f2f0e1f08c2c9fd2883bdbd0141a75e306b065ec9e72ae9479c8d7e6675",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"CartItem\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"certificationId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"certificationName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"logoUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"provider\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"examCode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"User\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"CartItemToUser\"}],\"dbName\":null},\"Payment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripeSessionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripePaymentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"PaymentStatus\"},{\"name\":\"items\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"receiptNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"paymentMethod\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"coursesCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"User\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PaymentToUser\"},{\"name\":\"course_enrollments\",\"kind\":\"object\",\"type\":\"course_enrollments\",\"relationName\":\"PaymentTocourse_enrollments\"}],\"dbName\":null},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"language\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"occupation\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"totalspent\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"coursesowned\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"profileImage\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"company\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"linkedIn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bio\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastLoginAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"totalSpent\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"coursesOwned\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"CartItem\",\"kind\":\"object\",\"type\":\"CartItem\",\"relationName\":\"CartItemToUser\"},{\"name\":\"Payment\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"PaymentToUser\"},{\"name\":\"achievements\",\"kind\":\"object\",\"type\":\"achievements\",\"relationName\":\"UserToachievements\"},{\"name\":\"course_enrollments\",\"kind\":\"object\",\"type\":\"course_enrollments\",\"relationName\":\"UserTocourse_enrollments\"},{\"name\":\"user_progress\",\"kind\":\"object\",\"type\":\"user_progress\",\"relationName\":\"UserTouser_progress\"}],\"dbName\":null},\"course_enrollments\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"paymentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"certificationName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"provider\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"enrolledAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"Payment\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"PaymentTocourse_enrollments\"},{\"name\":\"User\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserTocourse_enrollments\"},{\"name\":\"user_progress\",\"kind\":\"object\",\"type\":\"user_progress\",\"relationName\":\"course_enrollmentsTouser_progress\"}],\"dbName\":null},\"achievements\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"certificationId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"badgeUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"certificateUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"points\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"issuedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"verificationCode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"User\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToachievements\"}],\"dbName\":null},\"user_progress\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"enrollmentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"progressPercent\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"timeSpentMinutes\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"lastAccessed\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"modulesCompleted\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"totalModules\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bookmarks\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"course_enrollments\",\"kind\":\"object\",\"type\":\"course_enrollments\",\"relationName\":\"course_enrollmentsTouser_progress\"},{\"name\":\"User\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserTouser_progress\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

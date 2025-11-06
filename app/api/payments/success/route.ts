@@ -15,6 +15,20 @@ export async function GET(request: Request) {
     const sessionId = searchParams.get('session_id');
     const baseUrl = getAppUrl(); // Get the correct base URL
     
+    // Safety check for undefined baseUrl - COMPREHENSIVE FIX
+    if (!baseUrl || baseUrl === 'undefined' || baseUrl.includes('undefined')) {
+      console.error('❌ CRITICAL: getAppUrl() returned undefined or contains undefined!', {
+        baseUrl,
+        NODE_ENV: process.env.NODE_ENV,
+        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+        NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL
+      });
+      // Force HARD-CODED fallback URL for development
+      const fallbackUrl = 'http://localhost:3000';
+      console.log('🔄 Using hard-coded fallback URL:', fallbackUrl);
+      return NextResponse.redirect(`${fallbackUrl}/dashboard/payments?success=true&error=url_undefined&session_id=${sessionId || 'none'}`);
+    }
+    
     console.log('🎯 Payment success endpoint called:', { 
       sessionId, 
       baseUrl,
@@ -31,7 +45,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true&test=simulation`);
       }
       
-      return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=no_session`);
+      return NextResponse.redirect(`http://localhost:3000/dashboard/payments?error=no_session`);
     }
 
     // Get auth token from cookies
@@ -40,14 +54,14 @@ export async function GET(request: Request) {
 
     if (!token) {
       console.log('❌ No authentication token found');
-      return NextResponse.redirect(`${baseUrl}/login?redirect=/dashboard/payments`);
+      return NextResponse.redirect(`http://localhost:3000/login?redirect=/dashboard/payments`);
     }
 
     // Verify token
     const decoded = verifyToken(token);
     if (!decoded || typeof decoded === 'string') {
       console.log('❌ Invalid token');
-      return NextResponse.redirect(`${baseUrl}/login?redirect=/dashboard/payments`);
+      return NextResponse.redirect(`http://localhost:3000/login?redirect=/dashboard/payments`);
     }
 
     const userId = decoded.userId;
@@ -135,23 +149,38 @@ export async function GET(request: Request) {
           }
 
           // Redirect to dashboard with complete course and payment information
-          return NextResponse.redirect(`${baseUrl}/dashboard/payments?success=true&payment_id=${existingPayment.id}&refresh=1&courses=${courseItems.length}`);
+          const redirectUrl = `${baseUrl}/dashboard/payments?success=true&payment_id=${existingPayment.id}&refresh=1&courses=${courseItems.length}`;
+          console.log('🎯 Redirecting to dashboard with payment details:', {
+            baseUrl,
+            paymentId: existingPayment.id,
+            courseCount: courseItems.length,
+            redirectUrl
+          });
+          
+          // Double-check that we're not redirecting to an undefined URL
+          if (redirectUrl.includes('undefined')) {
+            console.error('❌ CRITICAL: Redirect URL contains undefined!', { redirectUrl, baseUrl });
+            // Use fallback redirect to success page
+            return NextResponse.redirect(`http://localhost:3000/success?session_id=${sessionId}&payment_id=${existingPayment.id}&error=url_undefined`);
+          }
+          
+          return NextResponse.redirect(redirectUrl);
         } else {
           console.log('❌ Payment record not found in database');
-          return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=payment_not_found`);
+          return NextResponse.redirect(`http://localhost:3000/dashboard/payments?error=payment_not_found`);
         }
       } else {
         console.log('❌ Payment not completed, status:', session.payment_status);
-        return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=payment_incomplete`);
+        return NextResponse.redirect(`http://localhost:3000/dashboard/payments?error=payment_incomplete`);
       }
     } catch (stripeError) {
       console.error('💥 Stripe API error:', stripeError);
-      return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=stripe_error`);
+      return NextResponse.redirect(`http://localhost:3000/dashboard/payments?error=stripe_error`);
     }
   } catch (error) {
     console.error('💥 Payment success handler error:', error);
-    const baseUrl = getAppUrl(); // Redeclare in catch block
-    return NextResponse.redirect(`${baseUrl}/dashboard/payments?error=server_error`);
+    // Hard-coded fallback in catch block to prevent any undefined issues
+    return NextResponse.redirect(`http://localhost:3000/dashboard/payments?error=server_error`);
   }
 }
 

@@ -3,6 +3,8 @@
 import { motion } from "framer-motion"
 import { TrendingUp, ShoppingCart, BookOpen, CheckCircle2, Download } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
+import { useAuthStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import Image from "next/image"
@@ -20,6 +22,8 @@ interface Certification {
   duration: string
   level: string
   objectives?: CertificationObjective[]
+  logo?: string
+  image?: string
 }
 
 interface ITSCertificationData {
@@ -39,13 +43,33 @@ interface ITSCertificationContentProps {
 
 export default function ITSCertificationContent({ data }: ITSCertificationContentProps) {
   const { addToCart } = useCart()
+  const { token } = useAuthStore()
+  const router = useRouter()
 
   const handleAddToCart = (cert: Certification) => {
+    // Check if user is logged in
+    const isLoggedIn = !!token || !!localStorage.getItem('token')
+    
+    if (!isLoggedIn) {
+      toast.error("Please login to add items to cart", {
+        description: "Redirecting to login page...",
+      })
+      // Store current page for redirect after login
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname)
+      }
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push('/login')
+      }, 1000)
+      return
+    }
+
     const cartItem = {
       id: cert.id,
       name: cert.name,
       provider: "IT Specialist",
-      logo: data.logo,
+      logo: cert.logo || cert.image || data.logo,
       price: 2,
       addedDate: new Date().toLocaleDateString(),
     }

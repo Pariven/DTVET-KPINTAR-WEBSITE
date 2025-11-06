@@ -1,8 +1,9 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/store"
+import { toast } from "@/hooks/use-toast"
 
 export interface CartItem {
   id: number
@@ -57,50 +58,69 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cartItems, isLoaded])
 
-  const addToCart = (item: CartItem) => {
+  const addToCart = useCallback((item: CartItem) => {
     // Check if user is logged in before adding to cart
-    if (!token) {
+    const isLoggedIn = !!token || !!localStorage.getItem('token')
+    
+    if (!isLoggedIn) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to add items to your cart. Redirecting to login page...",
+        variant: "destructive",
+      })
+      
       // Store the current page URL to redirect back after login
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('redirectAfterLogin', window.location.pathname)
       }
-      router.push('/login')
+      
+      // Redirect to login after a short delay
+      setTimeout(() => {
+        router.push('/login')
+      }, 1000)
       return
     }
 
     // Check if item already exists in cart
-    const existingItem = cartItems.find((cartItem: CartItem) => cartItem.id === item.id)
+    setCartItems((prevItems: CartItem[]) => {
+      const existingItem = prevItems.find((cartItem: CartItem) => cartItem.id === item.id)
 
-    if (existingItem) {
-      // If item exists, don't add it again
-      alert("This certification is already in your cart!")
-      return
-    }
+      if (existingItem) {
+        // If item exists, don't add it again
+        toast({
+          title: "Item Already in Cart",
+          description: "This certification is already in your cart!",
+          variant: "destructive",
+        })
+        return prevItems // Return unchanged array
+      }
 
-    // Add current date to the item
-    const newItem = {
-      ...item,
-      addedDate: new Date().toLocaleDateString(),
-    }
+      // Add current date to the item
+      const newItem = {
+        ...item,
+        addedDate: new Date().toLocaleDateString(),
+      }
 
-    setCartItems((prevItems: CartItem[]) => [...prevItems, newItem])
-  }
+      return [...prevItems, newItem]
+    })
+  }, [token, router])
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = useCallback((id: number) => {
     setCartItems((prevItems: CartItem[]) => prevItems.filter((item: CartItem) => item.id !== id))
-  }
+  }, [])
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
+    console.log('🗑️ Clearing cart...')
     setCartItems([])
-  }
+  }, [])
 
-  const getCartTotal = () => {
+  const getCartTotal = useCallback(() => {
     return cartItems.reduce((total: number, item: CartItem) => total + item.price, 0)
-  }
+  }, [cartItems])
 
-  const getCartCount = () => {
+  const getCartCount = useCallback(() => {
     return cartItems.length
-  }
+  }, [cartItems])
 
   return (
     <CartContext.Provider

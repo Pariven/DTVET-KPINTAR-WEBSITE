@@ -4,6 +4,8 @@ import { motion } from "framer-motion"
 import { useState } from "react"
 import { ShoppingCart, ChevronDown, ChevronUp, FileText } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
+import { useAuthStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import Image from "next/image"
@@ -19,6 +21,8 @@ interface Certification {
 
 export default function MOSCertificationContent() {
   const { addToCart } = useCart()
+  const { token } = useAuthStore()
+  const router = useRouter()
   const [expandedFolder, setExpandedFolder] = useState<string | null>(null)
 
   const microsoft365Certs: Certification[] = [
@@ -106,11 +110,29 @@ export default function MOSCertificationContent() {
   ]
 
   const handleAddToCart = (cert: Certification, folder: string) => {
+    // Check if user is logged in
+    const isLoggedIn = !!token || !!localStorage.getItem('token')
+    
+    if (!isLoggedIn) {
+      toast.error("Please login to add items to cart", {
+        description: "Redirecting to login page...",
+      })
+      // Store current page for redirect after login
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname)
+      }
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push('/login')
+      }, 1000)
+      return
+    }
+
     const cartItem = {
       id: cert.id,
       name: `${cert.name} (${cert.examCode}) - ${folder}`,
       provider: "Microsoft Office Specialist",
-      logo: "/logos/microsoft-logo.webp",
+      logo: cert.image || "/logos/microsoft-logo.webp",
       price: cert.price,
       addedDate: new Date().toLocaleDateString(),
     }

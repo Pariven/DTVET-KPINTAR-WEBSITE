@@ -34,31 +34,31 @@ export default function PaymentMethodsInfo({ className = '' }: PaymentMethodsInf
   return (
     <div className={`bg-gradient-to-br from-gray-800/80 to-gray-900/60 rounded-2xl border border-gray-600/50 ${className}`}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-700/50">
+      <div className="p-4 sm:p-6 border-b border-gray-700/50">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#F4BB44]/20 to-blue-500/20 rounded-xl flex items-center justify-center">
-            <CreditCard className="w-5 h-5 text-[#F4BB44]" />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#F4BB44]/20 to-blue-500/20 rounded-xl flex items-center justify-center">
+            <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#F4BB44]" />
           </div>
-          <h3 className="text-xl font-bold text-white font-barlow">Accepted Payment Methods</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-white font-barlow">Accepted Payment Methods</h3>
         </div>
-        <p className="text-gray-400 text-sm">Choose from multiple secure payment options</p>
+        <p className="text-gray-400 text-xs sm:text-sm">Choose from multiple secure payment options</p>
       </div>
 
       {/* Payment Methods Grid */}
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
         {paymentMethods.map((category, index) => (
-          <div key={index} className={`bg-gradient-to-r ${category.bgColor} border ${category.borderColor} rounded-xl p-4 hover:scale-[1.02] transition-all duration-300`}>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div key={index} className={`bg-gradient-to-r ${category.bgColor} border ${category.borderColor} rounded-xl p-3 sm:p-4 hover:scale-[1.01] sm:hover:scale-[1.02] transition-all duration-300`}>
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
                 <div className="text-white">{category.icon}</div>
               </div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold text-base mb-2">{category.category}</h4>
-                <div className="flex flex-wrap gap-2">
+              <div className="flex-1 min-w-0">
+                <h4 className="text-white font-semibold text-sm sm:text-base mb-2">{category.category}</h4>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {category.methods.map((method, methodIndex) => (
                     <span 
                       key={methodIndex}
-                      className="inline-flex items-center px-3 py-1 bg-white/10 text-white text-sm rounded-lg border border-white/20"
+                      className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1 bg-white/10 text-white text-xs sm:text-sm rounded-lg border border-white/20"
                     >
                       {method}
                     </span>
@@ -70,16 +70,16 @@ export default function PaymentMethodsInfo({ className = '' }: PaymentMethodsInf
         ))}
 
         {/* Additional Methods */}
-        <div className="bg-gradient-to-r from-gray-700/30 to-gray-600/30 border border-gray-600/30 rounded-xl p-4">
+        <div className="bg-gradient-to-r from-gray-700/30 to-gray-600/30 border border-gray-600/30 rounded-xl p-3 sm:p-4">
           <div className="text-center">
-            <p className="text-gray-300 text-sm font-medium mb-2">+ More payment methods available at checkout</p>
+            <p className="text-gray-300 text-xs sm:text-sm font-medium mb-1 sm:mb-2">+ More payment methods available at checkout</p>
             <p className="text-gray-400 text-xs">Including Touch 'n Go eWallet, Boost, and more</p>
           </div>
         </div>
       </div>
 
       {/* Payment Processing Information */}
-      <div className="p-6 border-t border-gray-700/50 space-y-4">
+      <div className="p-4 sm:p-6 border-t border-gray-700/50 space-y-3 sm:space-y-4">
         {/* Payment Fees & Processing Information */}
         <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-4">
           <div className="flex items-center gap-3 mb-3">
@@ -139,30 +139,30 @@ export default function PaymentMethodsInfo({ className = '' }: PaymentMethodsInf
             <h4 className="text-green-400 font-semibold">Bank-Level Security</h4>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-              <span className="text-green-300 text-sm">256-bit SSL encryption</span>
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span className="text-green-300 text-xs sm:text-sm">256-bit SSL encryption</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-              <span className="text-green-300 text-sm">PCI DSS Level 1 compliant</span>
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span className="text-green-300 text-xs sm:text-sm">PCI DSS Level 1 compliant</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-              <span className="text-green-300 text-sm">No sensitive data stored</span>
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span className="text-green-300 text-xs sm:text-sm">No sensitive data stored</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-              <span className="text-green-300 text-sm">Advanced fraud detection</span>
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span className="text-green-300 text-xs sm:text-sm">Advanced fraud detection</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-              <span className="text-green-300 text-sm">Real-time transaction monitoring</span>
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span className="text-green-300 text-xs sm:text-sm">Real-time monitoring</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-              <span className="text-green-300 text-sm">3D Secure authentication</span>
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span className="text-green-300 text-xs sm:text-sm">3D Secure authentication</span>
             </div>
           </div>
         </div>

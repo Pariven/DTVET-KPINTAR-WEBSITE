@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/cart-context';
 import { useAuthStore } from '@/lib/store';
-import useAuthRedirect from '@/hooks/use-auth-redirect';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import SimpleStripeButton from '@/components/payment/simple-stripe-button';
@@ -18,14 +17,9 @@ import { Button } from '@/components/ui/button';
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, removeFromCart, clearCart } = useCart();
+  const { token } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [paymentCancelled, setPaymentCancelled] = useState(false);
-  
-  // Use simple authentication hook
-  const { isAuthenticated, isLoading, token } = useAuthRedirect({
-    redirectTo: '/login',
-    allowUnauthenticated: false
-  });
 
   useEffect(() => {
     setMounted(true);
@@ -39,20 +33,20 @@ export default function CheckoutPage() {
     }
   }, []);
 
-  if (!mounted || isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl font-barlow">Loading checkout...</div>
-      </div>
-    );
+
+
+  useEffect(() => {
+    if (mounted && !token) {
+      router.push('/login?redirect=/checkout');
+    }
+  }, [token, router, mounted]);
+
+  if (!mounted) {
+    return null; // Prevent hydration issues
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl font-barlow">Redirecting to login...</div>
-      </div>
-    );
+  if (!token) {
+    return null; // Will redirect
   }
 
   const total = cartItems.reduce((sum: number, item: any) => sum + item.price, 0);
@@ -113,20 +107,20 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               {/* Cart Items - Left Side */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4 lg:space-y-6">
                 {/* Order Header */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                   <div>
-                    <h2 className="text-xl font-bold text-white font-barlow">Order Summary</h2>
+                    <h2 className="text-lg sm:text-xl font-bold text-white font-barlow">Order Summary</h2>
                     <p className="text-gray-400 text-sm">{cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in your cart</p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearCart}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-400/5 hover:scale-110 border border-red-400/20 hover:border-red-400/40 transition-all duration-300"
+                    className="text-red-400 hover:text-red-300 hover:bg-red-400/5 hover:scale-105 border border-red-400/20 hover:border-red-400/40 transition-all duration-300 self-start sm:self-center"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Clear All
@@ -134,36 +128,36 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Cart Items */}
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   {cartItems.map((item: any, index: number) => (
                     <Card key={item.id} className="bg-gray-800/40 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300">
-                      <CardContent className="p-8">
-                        <div className="flex items-start gap-8">
+                      <CardContent className="p-4 sm:p-6 lg:p-8">
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 lg:gap-8">
                           {/* Product Image */}
-                          <div className="relative w-32 h-32 flex-shrink-0">
-                            <div className="w-full h-full bg-white rounded-xl p-4 shadow-xl">
+                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 flex-shrink-0 mx-auto sm:mx-0">
+                            <div className="w-full h-full bg-white rounded-xl p-2 sm:p-3 lg:p-4 shadow-xl">
                               <Image
                                 src={item.logo || '/placeholder.svg'}
                                 alt={item.name}
                                 fill
-                                sizes="(max-width: 768px) 100px, 128px"
-                                className="object-contain p-2"
+                                sizes="(max-width: 640px) 80px, (max-width: 1024px) 96px, 128px"
+                                className="object-contain p-1 sm:p-2"
                                 priority={index === 0}
                               />
                             </div>
                           </div>
 
                           {/* Product Details */}
-                          <div className="flex-1 min-w-0 space-y-4">
+                          <div className="flex-1 min-w-0 space-y-3 lg:space-y-4 text-center sm:text-left">
                             <div>
-                              <h3 className="text-white font-bold text-2xl leading-tight mb-3">
+                              <h3 className="text-white font-bold text-lg sm:text-xl lg:text-2xl leading-tight mb-2 lg:mb-3">
                                 {item.name}
                               </h3>
-                              <div className="flex items-center gap-4 mb-4">
-                                <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold bg-[#F4BB44]/20 text-[#F4BB44] border border-[#F4BB44]/40">
+                              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mb-3 lg:mb-4">
+                                <span className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#F4BB44]/20 text-[#F4BB44] border border-[#F4BB44]/40">
                                   Professional Certification
                                 </span>
-                                <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold bg-green-500/20 text-green-400 border border-green-500/40">
+                                <span className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold bg-green-500/20 text-green-400 border border-green-500/40">
                                   ✓ Instant Access
                                 </span>
                               </div>
@@ -171,20 +165,20 @@ export default function CheckoutPage() {
                           </div>
 
                           {/* Price and Remove */}
-                          <div className="text-right flex-shrink-0 flex flex-col items-end gap-4">
-                            <div className="bg-gradient-to-br from-[#F4BB44]/20 to-orange-500/20 border border-[#F4BB44]/30 rounded-xl p-6 text-center">
-                              <p className="text-gray-300 text-sm mb-2">Price</p>
-                              <p className="text-white font-bold text-3xl mb-1">RM {item.price.toFixed(2)}</p>
+                          <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 sm:gap-4 w-full sm:w-auto">
+                            <div className="bg-gradient-to-br from-[#F4BB44]/20 to-orange-500/20 border border-[#F4BB44]/30 rounded-xl p-3 sm:p-4 lg:p-6 text-center">
+                              <p className="text-gray-300 text-xs sm:text-sm mb-1 lg:mb-2">Price</p>
+                              <p className="text-white font-bold text-xl sm:text-2xl lg:text-3xl mb-0.5 lg:mb-1">RM {item.price.toFixed(2)}</p>
                               <p className="text-gray-400 text-xs">per certification</p>
                             </div>
                             <Button
                               variant="ghost"
-                              size="lg"
+                              size="sm"
                               onClick={() => removeFromCart(item.id)}
-                              className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 hover:scale-110 border border-gray-600/50 hover:border-red-500/50 px-4 py-2 transition-all duration-300"
+                              className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 hover:scale-105 border border-gray-600/50 hover:border-red-500/50 px-3 py-2 transition-all duration-300"
                             >
-                              <Trash2 className="w-5 h-5 mr-2" />
-                              Remove
+                              <Trash2 className="w-4 h-4 mr-1 sm:mr-2" />
+                              <span className="text-xs sm:text-sm">Remove</span>
                             </Button>
                           </div>
                         </div>
@@ -195,13 +189,13 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment Section - Right Side */}
-              <div className="lg:col-span-1 space-y-6">
-                <div className="sticky top-24 md:top-32 z-40">
+              <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+                <div className="lg:sticky lg:top-24 xl:top-32 z-40">
                   <Card className="bg-gray-800/60 border border-gray-700/50">
                   <CardHeader className="border-b border-gray-700/50 pb-3">
-                    <CardTitle className="text-white font-barlow text-lg">Payment Summary</CardTitle>
+                    <CardTitle className="text-white font-barlow text-base sm:text-lg">Payment Summary</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-4">
+                  <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
                     {/* Order Total */}
                     <div className="space-y-3">
                       <div className="flex justify-between text-gray-300 text-sm">
@@ -215,20 +209,20 @@ export default function CheckoutPage() {
                       <Separator className="bg-gray-700/50" />
                       
                       {/* Payment Method Fees Info */}
-                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                        <h4 className="text-blue-400 font-semibold text-xs mb-2">💳 Payment Processing Fees</h4>
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2 sm:p-3">
+                        <h4 className="text-blue-400 font-semibold text-xs sm:text-sm mb-2">💳 Payment Processing Fees</h4>
                         <div className="space-y-1 text-xs text-gray-300">
-                          <div className="flex justify-between">
-                            <span>Credit/Debit Cards:</span>
-                            <span className="text-yellow-300">+ RM 2.50</span>
+                          <div className="flex justify-between items-center">
+                            <span className="truncate mr-2">Credit/Debit Cards:</span>
+                            <span className="text-yellow-300 whitespace-nowrap">+ RM 2.50</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Online Banking (FPX):</span>
-                            <span className="text-green-300">+ RM 1.00</span>
+                          <div className="flex justify-between items-center">
+                            <span className="truncate mr-2">Online Banking (FPX):</span>
+                            <span className="text-green-300 whitespace-nowrap">+ RM 1.00</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Digital Wallets:</span>
-                            <span className="text-blue-300">+ RM 2.50</span>
+                          <div className="flex justify-between items-center">
+                            <span className="truncate mr-2">Digital Wallets:</span>
+                            <span className="text-blue-300 whitespace-nowrap">+ RM 2.50</span>
                           </div>
                         </div>
                         <p className="text-xs text-green-400 mt-2 italic">💡 FPX saves you RM 1.50 per transaction!</p>

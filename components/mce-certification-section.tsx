@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown, ChevronUp, ShoppingCart, FileText, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
+import { useAuthStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 interface MCECertification {
@@ -31,6 +33,8 @@ const educatorCertifications: MCECertification[] = [
 export default function MCECertificationSection() {
   const [expandedFolder, setExpandedFolder] = useState<string | null>(null)
   const { addToCart } = useCart()
+  const { token } = useAuthStore()
+  const router = useRouter()
 
   const toggleFolder = (folder: string) => {
     setExpandedFolder(expandedFolder === folder ? null : folder)
@@ -77,11 +81,29 @@ export default function MCECertificationSection() {
   }
 
   const handleAddToCart = (cert: MCECertification) => {
+    // Check if user is logged in
+    const isLoggedIn = !!token || !!localStorage.getItem('token')
+    
+    if (!isLoggedIn) {
+      toast.error("Please login to add items to cart", {
+        description: "Redirecting to login page...",
+      })
+      // Store current page for redirect after login
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname)
+      }
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push('/login')
+      }, 1000)
+      return
+    }
+
     const cartItem = {
       id: cert.id,
       name: `${cert.name} (${cert.examCode})`,
       provider: "Microsoft",
-      logo: "/logos/microsoft-logo.webp",
+      logo: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/microsoft-certified-educator-badge-ZXy4N9j8K2vL3mR5qT7wE1uP6sA9cF.png",
       price: cert.price,
       addedDate: new Date().toLocaleDateString(),
     }

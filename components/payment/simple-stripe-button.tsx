@@ -95,6 +95,18 @@ export default function SimpleStripeButton({ items, total, onPaymentStart }: Sim
       // Show success message
       toast.success(`Redirecting to secure payment for RM ${total.toFixed(2)}`);
       
+      console.log('🎯 Redirecting to Stripe checkout:', {
+        url: data.url,
+        sessionId: data.sessionId,
+        total: total
+      });
+      
+      // Store payment session for tracking
+      if (data.sessionId) {
+        sessionStorage.setItem('stripe_session_id', data.sessionId);
+        sessionStorage.setItem('payment_total', total.toString());
+      }
+      
       // Redirect to Stripe Checkout
       window.location.href = data.url;
 

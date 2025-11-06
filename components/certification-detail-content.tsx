@@ -69,7 +69,7 @@ export default function CertificationDetailContent({ data }: CertificationDetail
       id: cert.id || Math.floor(Math.random() * 10000),
       name: cert.name,
       provider: data.title.split(" ")[0],
-      logo: data.logo,
+      logo: cert.image || cert.logo || data.logo,
       price: cert.price || 2,
       addedDate: new Date().toLocaleDateString(),
     }

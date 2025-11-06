@@ -120,6 +120,36 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.CartItemScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  certificationId: 'certificationId',
+  certificationName: 'certificationName',
+  price: 'price',
+  logoUrl: 'logoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  provider: 'provider',
+  category: 'category',
+  examCode: 'examCode'
+};
+
+exports.Prisma.PaymentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  stripeSessionId: 'stripeSessionId',
+  stripePaymentId: 'stripePaymentId',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  items: 'items',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  receiptNumber: 'receiptNumber',
+  paymentMethod: 'paymentMethod',
+  coursesCount: 'coursesCount'
+};
+
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -127,7 +157,62 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  role: 'role'
+  role: 'role',
+  phone: 'phone',
+  language: 'language',
+  country: 'country',
+  occupation: 'occupation',
+  totalspent: 'totalspent',
+  coursesowned: 'coursesowned',
+  profileImage: 'profileImage',
+  city: 'city',
+  company: 'company',
+  linkedIn: 'linkedIn',
+  bio: 'bio',
+  lastLoginAt: 'lastLoginAt',
+  totalSpent: 'totalSpent',
+  coursesOwned: 'coursesOwned'
+};
+
+exports.Prisma.Course_enrollmentsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  paymentId: 'paymentId',
+  certificationName: 'certificationName',
+  provider: 'provider',
+  price: 'price',
+  status: 'status',
+  enrolledAt: 'enrolledAt'
+};
+
+exports.Prisma.AchievementsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  title: 'title',
+  description: 'description',
+  certificationId: 'certificationId',
+  badgeUrl: 'badgeUrl',
+  certificateUrl: 'certificateUrl',
+  points: 'points',
+  issuedAt: 'issuedAt',
+  expiresAt: 'expiresAt',
+  verificationCode: 'verificationCode'
+};
+
+exports.Prisma.User_progressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  enrollmentId: 'enrollmentId',
+  progressPercent: 'progressPercent',
+  timeSpentMinutes: 'timeSpentMinutes',
+  lastAccessed: 'lastAccessed',
+  modulesCompleted: 'modulesCompleted',
+  totalModules: 'totalModules',
+  notes: 'notes',
+  bookmarks: 'bookmarks',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -135,17 +220,49 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.PaymentStatus = exports.$Enums.PaymentStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+};
+
 exports.Role = exports.$Enums.Role = {
   USER: 'USER',
   ADMIN: 'ADMIN'
 };
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  CartItem: 'CartItem',
+  Payment: 'Payment',
+  User: 'User',
+  course_enrollments: 'course_enrollments',
+  achievements: 'achievements',
+  user_progress: 'user_progress'
 };
 
 /**
