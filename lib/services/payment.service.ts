@@ -22,6 +22,18 @@ export class PaymentService {
       throw new Error('Cart is empty');
     }
 
+    // Verify user exists before creating payment
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      console.error('❌ User not found for payment creation:', userId);
+      throw new Error('User not found. Please log in again.');
+    }
+
+    console.log('✅ User verified for payment:', { userId, email: user.email });
+
     // Calculate total
     const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
 
@@ -61,17 +73,37 @@ export class PaymentService {
       payment_method_configuration: undefined, // Use default configuration which includes wallets
     });
 
-    // Store pending payment in database
-    await prisma.payment.create({
-      data: {
+    // Store pending payment in database with error handling
+    try {
+      const payment = await prisma.payment.create({
+        data: {
+          userId,
+          stripeSessionId: session.id,
+          amount: totalAmount,
+          currency: STRIPE_CONFIG.currency,
+          status: 'PENDING',
+          items: JSON.stringify(items),
+          coursesCount: items.length,
+        },
+      });
+
+      console.log('✅ Payment record created:', {
+        paymentId: payment.id,
         userId,
-        stripeSessionId: session.id,
+        sessionId: session.id,
         amount: totalAmount,
-        currency: STRIPE_CONFIG.currency,
-        status: 'PENDING',
-        items: JSON.stringify(items),
-      },
-    });
+        itemCount: items.length
+      });
+    } catch (error) {
+      console.error('❌ Failed to create payment record:', error);
+      // Cancel the Stripe session if database creation fails
+      try {
+        await stripe.checkout.sessions.expire(session.id);
+      } catch (cancelError) {
+        console.error('❌ Failed to cancel Stripe session:', cancelError);
+      }
+      throw new Error('Failed to create payment record. Please try again.');
+    }
 
     return {
       sessionId: session.id,
