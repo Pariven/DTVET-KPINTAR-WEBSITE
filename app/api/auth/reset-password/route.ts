@@ -14,12 +14,11 @@ export async function POST(request: NextRequest) {
     const { token, newPassword } = resetPasswordSchema.parse(body);
 
     // Find user by reset token and check expiry
-    const user = await prisma.user.findFirst({
-      where: {
-        resetToken: token,
-        resetTokenExpiry: { gte: new Date() },
-      },
-    });
+    const where: any = {
+      resetToken: token,
+      resetTokenExpiry: { gte: new Date() },
+    };
+    const user = await prisma.user.findFirst({ where });
     if (!user) {
       return NextResponse.json({ error: 'Invalid or expired reset token.' }, { status: 400 });
     }
@@ -34,7 +33,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         resetToken: null,
         resetTokenExpiry: null,
-      },
+      } as any,
     });
 
     return NextResponse.json({ message: 'Password has been reset successfully.' });
