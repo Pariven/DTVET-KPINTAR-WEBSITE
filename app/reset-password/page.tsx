@@ -2,10 +2,10 @@
 "use client"
 export const dynamic = "force-dynamic";
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [status, setStatus] = useState<string | null>(null)
@@ -47,42 +47,59 @@ export default function ResetPasswordPage() {
   }
 
   return (
+    <div className="w-full max-w-md p-8 bg-white/10 rounded-xl shadow-lg">
+      <h1 className="text-2xl font-bold mb-6 text-center">Reset Password</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="newPassword" className="block mb-2">New Password</label>
+          <input
+            id="newPassword"
+            type="password"
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
+            className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="confirmPassword" className="block mb-2">Confirm New Password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full py-3 rounded bg-[#F4BB44] hover:bg-[#E5A63D] text-black font-bold"
+          disabled={loading}
+        >
+          {loading ? "Resetting..." : "Reset Password"}
+        </button>
+      </form>
+      {status && <div className="mt-4 text-center text-sm">{status}</div>}
+    </div>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <div className="w-full max-w-md p-8 bg-white/10 rounded-xl shadow-lg">
+      <h1 className="text-2xl font-bold mb-6 text-center">Reset Password</h1>
+      <div className="text-center">Loading...</div>
+    </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
-      <div className="w-full max-w-md p-8 bg-white/10 rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold mb-6 text-center">Reset Password</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="newPassword" className="block mb-2">New Password</label>
-            <input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="confirmPassword" className="block mb-2">Confirm New Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-3 rounded bg-[#F4BB44] hover:bg-[#E5A63D] text-black font-bold"
-            disabled={loading}
-          >
-            {loading ? "Resetting..." : "Reset Password"}
-          </button>
-        </form>
-        {status && <div className="mt-4 text-center text-sm">{status}</div>}
-      </div>
+      <Suspense fallback={<LoadingFallback />}>
+        <ResetPasswordForm />
+      </Suspense>
     </div>
   )
 }
