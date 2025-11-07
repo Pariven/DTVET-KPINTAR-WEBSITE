@@ -70,7 +70,7 @@ export default function CertificationDetailContent({ data }: CertificationDetail
       name: cert.name,
       provider: data.title.split(" ")[0],
       logo: cert.image || cert.logo || data.logo,
-      price: cert.price || 2,
+      price: cert.price || 810,
       addedDate: new Date().toLocaleDateString(),
     }
 

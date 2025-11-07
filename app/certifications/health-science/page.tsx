@@ -13,11 +13,13 @@ const healthScienceData = {
   logo: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/5-removebg-preview-m43PqxxYRmK3sfOZc3yRiDFUhCdmjy.png",
   certifications: [
     {
+      id: 7001,
       name: "Medical Administrative Assistant",
       description:
         "Foundational knowledge of medical office processes, terminology, billing, and recordkeeping. Learn patient communication, medical records management, and health-related legal compliance.",
       duration: "150+ hours",
       level: "Professional",
+      price: 810,
       image:
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/5-removebg-preview-m43PqxxYRmK3sfOZc3yRiDFUhCdmjy.png",
       pdfPath: "/pdfs/medical-administrative-assistant.pdf",

@@ -13,20 +13,24 @@ const entrepreneurshipData = {
   logo: "/logos/esb-logo.png",
   certifications: [
     {
+      id: 8001,
       name: "Entrepreneurship and Small Business (ESB) - Original",
       description:
         "Comprehensive certification covering entrepreneurship concepts, opportunity recognition, starting a business, business operations, marketing and sales, and financial management.",
       duration: "150+ hours",
       level: "Professional",
+      price: 810,
       pdfPath: "/pdfs/esb-original.pdf",
       image: "/logos/esb-logo.png",
     },
     {
+      id: 8002,
       name: "Entrepreneurship and Small Business (ESB) V.2",
       description:
         "Updated certification covering entrepreneurial and small business concepts, marketing and sales, production and distribution, and business financials.",
       duration: "150+ hours",
       level: "Professional",
+      price: 810,
       pdfPath: "/pdfs/esb-v2.pdf",
       image: "/logos/esb-logo.png",
     },

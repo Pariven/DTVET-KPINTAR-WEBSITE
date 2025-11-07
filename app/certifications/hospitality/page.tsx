@@ -13,11 +13,13 @@ const hospitalityData = {
   logo: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/4-removebg-preview-LKhjuZE5PETXFRergDleCGMOXjCl1C.png",
   certifications: [
     {
+      id: 6001,
       name: "Culinary Foundations",
       description:
         "Master essential knowledge and skills for working professionally in a commercial kitchen, including set up procedures, food safety and sanitation, executing recipes, and time management. Certified by World Association of Master Chefs.",
       duration: "150+ hours",
       level: "Fundamentals",
+      price: 810,
       image:
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/4-removebg-preview-LKhjuZE5PETXFRergDleCGMOXjCl1C.png",
       largeImage: true,

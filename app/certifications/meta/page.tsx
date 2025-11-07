@@ -13,11 +13,13 @@ const metaData = {
   logo: "/logos/meta-logo.png",
   certifications: [
     {
+      id: 4001,
       name: "Meta Digital Marketing Associate",
       description:
         "Comprehensive digital marketing certification covering advertising, analytics, and campaign optimization strategies.",
       duration: "40-60 hours",
       level: "Associate",
+      price: 810,
       logo: "/logos/meta-certification-badge.png",
       largeImage: true,
       pdfPath: "/pdfs/meta-digital-marketing-associate-objectives.pdf",

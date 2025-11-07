@@ -13,25 +13,31 @@ const criticalCareerData = {
   logo: "/logos/its-logo.png", // Using ITS logo as placeholder
   certifications: [
     {
+      id: 9001,
       name: "Professional Communication Skills",
       description:
         "Master written and verbal communication, presentation skills, and professional correspondence in workplace settings.",
       duration: "25-35 hours",
       level: "Professional",
+      price: 810,
     },
     {
+      id: 9002,
       name: "Leadership and Team Management",
       description:
         "Develop leadership capabilities, team building skills, and project management fundamentals for career advancement.",
       duration: "30-40 hours",
       level: "Professional",
+      price: 810,
     },
     {
+      id: 9003,
       name: "Critical Thinking and Problem Solving",
       description:
         "Enhance analytical thinking, decision-making processes, and creative problem-solving techniques for workplace challenges.",
       duration: "25-35 hours",
       level: "Professional",
+      price: 810,
     },
   ],
   benefits: [
