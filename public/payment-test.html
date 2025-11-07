@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .button {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #218838;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Payment Success Flow Test</h1>
+        
+        <div class="info">
+            <strong>This page simulates what happens after a successful Stripe payment.</strong><br>
+            It tests the redirect flow: Stripe → Success API → Dashboard
+        </div>
+        
+        <h3>Test Scenarios:</h3>
+        
+        <p><strong>1. Direct Dashboard Test:</strong></p>
+        <a href="/dashboard/payments?success=true" class="button">
+            Go to Dashboard (Success)
+        </a>
+        
+        <p><strong>2. Simulate Stripe Success Redirect:</strong></p>
+        <a href="/api/payments/success?session_id=cs_test_simulation123" class="button">
+            Test Success API
+        </a>
+        
+        <p><strong>3. Simple Payment Completion (No Stripe):</strong></p>
+        <a href="/api/payments/simple-complete" class="button">
+            Test Simple Redirect
+        </a>
+        
+        <p><strong>4. Test Error Handling:</strong></p>
+        <a href="/dashboard/payments?error=payment_not_found" class="button">
+            Test Error Message
+        </a>
+        
+        <h3>Expected Flow:</h3>
+        <ol>
+            <li><strong>User completes payment</strong> → Stripe processes payment</li>
+            <li><strong>Stripe redirects to:</strong> <code>/api/payments/success?session_id=cs_...</code></li>
+            <li><strong>Success API processes:</strong> Updates payment status, clears cart</li>
+            <li><strong>Success API redirects to:</strong> <code>/dashboard/payments?success=true</code></li>
+            <li><strong>Dashboard displays:</strong> Success message and payment history</li>
+        </ol>
+        
+        <h3>Current URLs:</h3>
+        <ul>
+            <li><strong>Base URL:</strong> http://localhost:3000</li>
+            <li><strong>Success URL:</strong> /api/payments/success?session_id={CHECKOUT_SESSION_ID}</li>
+            <li><strong>Cancel URL:</strong> /checkout?canceled=true</li>
+            <li><strong>Dashboard URL:</strong> /dashboard/payments</li>
+        </ul>
+        
+        <div class="info">
+            <strong>💡 If you see "undefined" URLs:</strong><br>
+            This means the redirect URL construction is failing. Check browser console for errors.
+        </div>
+    </div>
+
+    <script>
+        // Log current URL for debugging
+        console.log('🔍 Current URL:', window.location.href);
+        console.log('🔍 URL Params:', new URLSearchParams(window.location.search));
+        
+        // Check if we have success or error parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success')) {
+            console.log('✅ Success parameter detected');
+        }
+        if (urlParams.get('error')) {
+            console.log('❌ Error parameter detected:', urlParams.get('error'));
+        }
+    </script>
+</body>
+</html>

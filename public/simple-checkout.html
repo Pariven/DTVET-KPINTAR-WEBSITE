@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Checkout Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            background-color: #28a745;
+        }
+        .success:hover {
+            background-color: #218838;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Simple Checkout Test</h1>
+        
+        <div class="info">
+            <strong>This page tests payment completion without Stripe JavaScript.</strong><br>
+            Use this to bypass any CSP or blocking issues with Stripe.
+        </div>
+        
+        <h3>Order Summary:</h3>
+        <ul>
+            <li>Microsoft Office Specialist - Word Expert: RM 299.00</li>
+            <li>Processing Fee: RM 0.00</li>
+        </ul>
+        <hr>
+        <p><strong>Total: RM 299.00</strong></p>
+        
+        <h3>Complete Payment:</h3>
+        <p>Click the button below to simulate a successful payment and test the redirect flow:</p>
+        
+        <a href="/api/payments/simple-complete" class="button success">
+            ✅ Complete Payment (Test)
+        </a>
+        
+        <a href="/checkout" class="button">
+            ← Back to Regular Checkout
+        </a>
+        
+        <h3>What This Tests:</h3>
+        <ol>
+            <li>Authentication check (must be logged in)</li>
+            <li>Payment completion endpoint</li>
+            <li>Redirect to dashboard</li>
+            <li>Success message display</li>
+            <li>Payment history update</li>
+        </ol>
+        
+        <div class="info">
+            <strong>💡 Expected Flow:</strong><br>
+            Click "Complete Payment" → Redirect to Dashboard → See success message
+        </div>
+    </div>
+
+    <script>
+        console.log('🧪 Simple checkout test page loaded');
+        console.log('🔍 Current URL:', window.location.href);
+    </script>
+</body>
+</html>

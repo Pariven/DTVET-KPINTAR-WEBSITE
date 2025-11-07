@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model CartItem {
+  id                String   @id
+  userId            String
+  certificationId   String
+  certificationName String
+  price             Float
+  logoUrl           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+  provider          String?  @default("Unknown")
+  category          String?
+  examCode          String?
+  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Payment {
+  id                 String               @id
+  userId             String
+  stripeSessionId    String               @unique
+  stripePaymentId    String?
+  amount             Float
+  currency           String               @default("myr")
+  status             PaymentStatus        @default(PENDING)
+  items              Json
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  receiptNumber      String?              @unique
+  paymentMethod      String?
+  coursesCount       Int?                 @default(0)
+  User               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course_enrollments course_enrollments[]
+
+  @@index([stripeSessionId])
+  @@index([userId])
+}
+
+model User {
+  id                 String               @id
+  name               String
+  email              String               @unique
+  password           String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  role               Role                 @default(USER)
+  phone              String?
+  language           String?              @default("english")
+  country            String?
+  occupation         String?
+  totalspent         Float?               @default(0)
+  coursesowned       Int?                 @default(0)
+  profileImage       String?
+  city               String?
+  company            String?
+  linkedIn           String?
+  bio                String?
+  lastLoginAt        DateTime?
+  totalSpent         Float?               @default(0)
+  coursesOwned       Int?                 @default(0)
+  CartItem           CartItem[]
+  Payment            Payment[]
+  achievements       achievements[]
+  course_enrollments course_enrollments[]
+  user_progress      user_progress[]
+}
+
+model course_enrollments {
+  id                String          @id @default(dbgenerated("(gen_random_uuid())::text"))
+  userId            String
+  paymentId         String
+  certificationName String
+  provider          String
+  price             Float
+  status            String?         @default("active")
+  enrolledAt        DateTime?       @default(now())
+  Payment           Payment         @relation(fields: [paymentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  User              User            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user_progress     user_progress[]
+
+  @@index([paymentId])
+  @@index([userId])
+}
+
+model achievements {
+  id               String    @id
+  userId           String
+  type             String
+  title            String
+  description      String
+  certificationId  String?
+  badgeUrl         String?
+  certificateUrl   String?
+  points           Int       @default(0)
+  issuedAt         DateTime  @default(now())
+  expiresAt        DateTime?
+  verificationCode String?   @unique
+  User             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([userId])
+  @@index([verificationCode])
+}
+
+model user_progress {
+  id                 String             @id
+  userId             String
+  enrollmentId       String
+  progressPercent    Int                @default(0)
+  timeSpentMinutes   Int                @default(0)
+  lastAccessed       DateTime           @default(now())
+  modulesCompleted   Int                @default(0)
+  totalModules       Int                @default(10)
+  notes              String?
+  bookmarks          Json?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime
+  course_enrollments course_enrollments @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  User               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, enrollmentId])
+  @@index([enrollmentId])
+  @@index([userId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}

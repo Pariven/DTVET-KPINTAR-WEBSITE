@@ -1,0 +1,216 @@
+// Enhanced Prisma Schema for Complete User Account Management
+// This schema includes user progress, course enrollment, and certification tracking
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// User model with enhanced profile information
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  password        String
+  phone           String?
+  dateOfBirth     DateTime?
+  profileImage    String?
+  language        String    @default("english") // english, malay
+  country         String?
+  city            String?
+  occupation      String?
+  company         String?
+  linkedIn        String?
+  bio             String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastLoginAt     DateTime?
+  role            Role      @default(USER)
+  
+  // Password reset token and expiry
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  
+  // Relations
+  payments        Payment[]
+  cartItems       CartItem[]
+  enrollments     Enrollment[]
+  achievements    Achievement[]
+  userProgress    UserProgress[]
+  
+  @@map("users")
+}
+
+// Cart items for temporary storage before purchase
+model CartItem {
+  id               String    @id @default(cuid())
+  userId           String
+  certificationId  String
+  certificationName String
+  price            Float
+  logoUrl          String?
+  provider         String    // Microsoft, Adobe, IT Specialist, etc.
+  category         String?   // MOS, MCF, MCE, ITS, etc.
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("cart_items")
+}
+
+// Payment transactions
+model Payment {
+  id                String        @id @default(cuid())
+  userId            String
+  stripeSessionId   String        @unique
+  stripePaymentId   String?
+  amount            Float
+  currency          String        @default("myr")
+  status            PaymentStatus @default(PENDING)
+  items             Json          // Store purchased items as JSON
+  receiptNumber     String?       @unique // Generated receipt number
+  paymentMethod     String?       // card, fpx, etc.
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments       Enrollment[]  // Link payments to course enrollments
+  
+  @@index([userId])
+  @@index([stripeSessionId])
+  @@index([receiptNumber])
+  @@map("payments")
+}
+
+// Course enrollments - tracks what courses user has access to
+model Enrollment {
+  id                String           @id @default(cuid())
+  userId            String
+  paymentId         String
+  certificationId   String
+  certificationName String
+  provider          String           // Microsoft, Adobe, IT Specialist
+  category          String           // MOS, MCF, MCE, ITS, Adobe
+  examCode          String?          // MO-100, AI-900, etc.
+  price             Float
+  logoUrl           String?
+  status            EnrollmentStatus @default(ACTIVE)
+  enrolledAt        DateTime         @default(now())
+  expiresAt         DateTime?        // For time-limited courses
+  completedAt       DateTime?
+  certificateUrl    String?          // Link to certificate if completed
+  updatedAt         DateTime         @updatedAt
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment           Payment          @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  progress          UserProgress[]
+  
+  @@index([userId])
+  @@index([paymentId])
+  @@index([certificationId])
+  @@map("enrollments")
+}
+
+// User progress tracking for each course
+model UserProgress {
+  id               String     @id @default(cuid())
+  userId           String
+  enrollmentId     String
+  moduleId         String?    // For tracking progress within modules
+  progressPercent  Int        @default(0) // 0-100
+  timeSpent        Int        @default(0) // Minutes spent on course
+  lastAccessed     DateTime   @default(now())
+  notes            String?    // User's personal notes
+  bookmarks        Json?      // Bookmarked sections
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollment       Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([enrollmentId])
+  @@map("user_progress")
+}
+
+// Achievement and certification tracking
+model Achievement {
+  id                String          @id @default(cuid())
+  userId            String
+  type              AchievementType
+  title             String
+  description       String
+  certificationId   String?         // Link to certification if applicable
+  badgeUrl          String?         // Achievement badge image
+  certificateUrl    String?         // Certificate download link
+  issuedAt          DateTime        @default(now())
+  expiresAt         DateTime?       // For certifications that expire
+  verificationCode  String?         @unique // For certificate verification
+  
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([verificationCode])
+  @@map("achievements")
+}
+
+// Certification catalog - static data about available certifications
+model Certification {
+  id           String   @id @default(cuid())
+  name         String
+  provider     String   // Microsoft, Adobe, IT Specialist
+  category     String   // MOS, MCF, MCE, ITS, Adobe
+  examCode     String?  // MO-100, AI-900, etc.
+  description  String
+  price        Float
+  duration     String?  // "2-3 months", "40 hours", etc.
+  difficulty   String?  // Beginner, Intermediate, Advanced
+  logoUrl      String?
+  brochureUrl  String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([provider])
+  @@index([category])
+  @@index([examCode])
+  @@map("certifications")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  INSTRUCTOR
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  SUSPENDED
+}
+
+enum AchievementType {
+  COURSE_COMPLETION
+  CERTIFICATION_EARNED
+  FIRST_PURCHASE
+  MILESTONE_REACHED
+  STREAK_ACHIEVEMENT
+}
