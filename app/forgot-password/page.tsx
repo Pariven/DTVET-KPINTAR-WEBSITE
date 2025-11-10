@@ -11,20 +11,30 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setLoading(true)
     setStatus(null)
+    
     try {
+      console.log('🔄 Sending forgot password request for:', email);
+      
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       })
+      
+      console.log('📧 Forgot password response status:', res.status);
+      
       const data = await res.json()
+      console.log('📧 Forgot password response data:', data);
+      
       if (res.ok) {
-        setStatus("If an account with that email exists, a reset link has been sent.")
+        setStatus("✅ If an account with that email exists, a reset link has been sent to your inbox. Please check your email (including spam folder).")
+        setEmail("") // Clear the form
       } else {
-        setStatus(data.error || "Something went wrong.")
+        setStatus(`❌ ${data.error || "Something went wrong. Please try again."}`)
       }
     } catch (err) {
-      setStatus("Something went wrong.")
+      console.error('❌ Forgot password error:', err);
+      setStatus("❌ Network error. Please check your connection and try again.")
     } finally {
       setLoading(false)
     }
@@ -54,7 +64,15 @@ export default function ForgotPasswordPage() {
             {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
-        {status && <div className="mt-4 text-center text-sm">{status}</div>}
+        {status && (
+          <div className={`mt-6 p-4 rounded-lg text-sm ${
+            status.includes('✅') 
+              ? 'bg-green-500/20 border border-green-500/30 text-green-100' 
+              : 'bg-red-500/20 border border-red-500/30 text-red-100'
+          }`}>
+            {status}
+          </div>
+        )}
       </div>
     </div>
   )
